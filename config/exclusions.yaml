@@ -1,0 +1,21 @@
+apps:
+  - "1Password"
+  - "Banking"
+  - "Keychain Access"
+domains:
+  - "reddit.com"
+  - "personal-webmail.com"
+  - "facebook.com"
+  - "twitter.com"
+  - "linkedin.com"
+calendar_title_patterns:
+  - "(?i)therapy"
+  - "(?i)personal"
+  - "(?i)1:1.*HR"
+  - "(?i)medical"
+  - "(?i)doctor"
+folders:
+  - "~/Documents/Personal"
+  - "~/Documents/Finance"
+  - "~/.ssh"
+  - "~/.gnupg"

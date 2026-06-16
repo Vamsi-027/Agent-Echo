@@ -1,0 +1,5 @@
+Stylistic Guidelines:
+- Begin posts with a short, punchy sentence.
+- Always include metric-driven achievements rather than generic adjectives.
+- End posts with a question to prompt discussion, like "How do you handle X?" or "What's your take?"
+- Keep paragraphs to 1-2 lines for high readability.

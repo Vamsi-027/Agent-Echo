@@ -1,0 +1,13 @@
+pillars:
+  - id: "technical_insight"
+    name: "Technical Insight"
+    description: "A technical problem solved, technique used, or tool comparison"
+  - id: "project_milestone"
+    name: "Project Milestone"
+    description: "Progress or completion of a project, feature, or goal"
+  - id: "lesson_learned"
+    name: "Lesson Learned"
+    description: "A mistake, setback, or unexpected learning and what it taught"
+  - id: "industry_commentary"
+    name: "Industry Commentary"
+    description: "A reaction or opinion on something happening in your field"

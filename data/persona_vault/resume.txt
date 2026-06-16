@@ -1,0 +1,5 @@
+I am Vamsi Cheruku, a senior distributed systems engineer with 8 years of experience.
+
+I built a real-time event pipeline at EchoCorp that scaled to 500k events per second using Kafka and Rust.
+
+I designed a consensus algorithm for a private blockchain network at BlockLabs using Go.

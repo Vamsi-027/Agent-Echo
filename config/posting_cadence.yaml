@@ -1,0 +1,16 @@
+cadence:
+  max_posts_per_day:
+    weekday: 2
+    weekend: 1
+  min_hours_between_posts: 3
+  posting_windows:
+    - start: "08:00"
+      end: "10:30"
+      weight: 0.4
+    - start: "12:00"
+      end: "13:30"
+      weight: 0.3
+    - start: "17:00"
+      end: "19:00"
+      weight: 0.3
+  jitter_minutes: 25

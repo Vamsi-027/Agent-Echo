@@ -1,5 +1,6 @@
 import os
 import pytest
+from pathlib import Path
 from db.db import get_db_connection, init_db
 
 
@@ -192,3 +193,49 @@ def test_sessions_ordered_by_updated_at_desc(test_db):
     sessions = get_chat_sessions(conn)
     conn.close()
     assert sessions[0]["id"] == s1["id"]
+
+
+from dashboard_server import extract_pdf_text, handle_uploaded_file
+
+
+def test_extract_pdf_text_returns_empty_for_nonexistent_file():
+    text = extract_pdf_text("/nonexistent/path/file.pdf")
+    assert text == ""
+
+
+def test_handle_uploaded_file_saves_image(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "data" / "media" / "uploads").mkdir(parents=True)
+    result = handle_uploaded_file("photo.png", b'\x89PNG\r\n' + b'\x00' * 50, "image/png")
+    assert result["type"] == "image"
+    assert result["filename"] == "photo.png"
+    assert Path(result["saved_path"]).exists()
+    assert "extracted_text" not in result
+
+
+def test_handle_uploaded_file_saves_video(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "data" / "media" / "uploads").mkdir(parents=True)
+    result = handle_uploaded_file("clip.mp4", b'\x00' * 50, "video/mp4")
+    assert result["type"] == "video"
+    assert Path(result["saved_path"]).exists()
+
+
+def test_handle_uploaded_file_pdf_saves_and_includes_extracted_text(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "data" / "uploads").mkdir(parents=True)
+    # Minimal valid PDF (no pages, extract_text returns "")
+    minimal_pdf = (
+        b'%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n'
+        b'2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n'
+        b'3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]>>endobj\n'
+        b'xref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n'
+        b'0000000058 00000 n \n0000000115 00000 n \n'
+        b'trailer<</Size 4/Root 1 0 R>>\nstartxref\n190\n%%EOF'
+    )
+    result = handle_uploaded_file("doc.pdf", minimal_pdf, "application/pdf")
+    assert result["type"] == "pdf"
+    assert result["filename"] == "doc.pdf"
+    assert "extracted_text" in result
+    assert isinstance(result["extracted_text"], str)
+    assert Path(result["saved_path"]).exists()

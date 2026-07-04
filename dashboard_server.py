@@ -2,6 +2,7 @@
 import http.server
 import json
 import os
+import re
 import sys
 import logging
 import argparse
@@ -368,6 +369,69 @@ async def process_chat_message(message: str) -> str:
         )
         conn.close()
         return res.content[0].text
+
+
+# ─── Chat Session Helpers ─────────────────────────────────────────────────────
+
+def get_chat_sessions(conn):
+    """Return all sessions ordered by most-recently-updated first."""
+    rows = conn.execute(
+        "SELECT id, title, created_at, updated_at, "
+        "(SELECT COUNT(*) FROM chat_messages WHERE session_id = chat_sessions.id) AS message_count "
+        "FROM chat_sessions ORDER BY updated_at DESC"
+    ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def create_chat_session(conn):
+    """Insert a new session with null title; return its row as a dict."""
+    conn.execute("INSERT INTO chat_sessions (title) VALUES (NULL)")
+    conn.commit()
+    session_id = conn.execute("SELECT last_insert_rowid()").fetchone()[0]
+    row = conn.execute(
+        "SELECT id, title, created_at FROM chat_sessions WHERE id = ?", (session_id,)
+    ).fetchone()
+    return dict(row)
+
+
+def delete_chat_session(conn, session_id):
+    """Delete session and all its messages (CASCADE). Return True if a row was deleted."""
+    cursor = conn.execute("DELETE FROM chat_sessions WHERE id = ?", (session_id,))
+    conn.commit()
+    return cursor.rowcount > 0
+
+
+def get_session_messages(conn, session_id):
+    """Return all messages for a session in chronological order."""
+    rows = conn.execute(
+        "SELECT id, session_id, role, content, attachments_json, created_at "
+        "FROM chat_messages WHERE session_id = ? ORDER BY created_at ASC",
+        (session_id,),
+    ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def save_chat_message(conn, session_id, role, content, attachments_json=None):
+    """Save a message, bump session.updated_at, and set title from first user message."""
+    conn.execute(
+        "INSERT INTO chat_messages (session_id, role, content, attachments_json) "
+        "VALUES (?, ?, ?, ?)",
+        (session_id, role, content, attachments_json),
+    )
+    conn.execute(
+        "UPDATE chat_sessions SET updated_at = datetime('now') WHERE id = ?",
+        (session_id,),
+    )
+    if role == "user":
+        existing = conn.execute(
+            "SELECT title FROM chat_sessions WHERE id = ?", (session_id,)
+        ).fetchone()
+        if existing and existing["title"] is None:
+            title = content.replace("\n", " ")[:60]
+            conn.execute(
+                "UPDATE chat_sessions SET title = ? WHERE id = ?", (title, session_id)
+            )
+    conn.commit()
 
 
 class DashboardRequestHandler(http.server.BaseHTTPRequestHandler):

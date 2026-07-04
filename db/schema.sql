@@ -134,6 +134,24 @@ CREATE TABLE IF NOT EXISTS pending_reviews (
     created_at TEXT DEFAULT (datetime('now'))
 );
 
+-- Chat sessions for the dashboard chat UI
+CREATE TABLE IF NOT EXISTS chat_sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+);
+
+-- Messages within a chat session
+CREATE TABLE IF NOT EXISTS chat_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER NOT NULL REFERENCES chat_sessions(id) ON DELETE CASCADE,
+    role TEXT NOT NULL,
+    content TEXT NOT NULL,
+    attachments_json TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
+);
+
 -- Performance Indexes
 CREATE INDEX IF NOT EXISTS idx_drafts_status_time ON drafts(status, scheduled_time);
 CREATE INDEX IF NOT EXISTS idx_activity_events_time ON activity_events(event_time);

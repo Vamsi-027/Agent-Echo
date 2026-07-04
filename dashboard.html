@@ -499,35 +499,141 @@
             font-style: italic;
         }
 
-        /* Chat Console - Clean Minimalist Redesign */
-        .chat-container {
+        /* Chat Split Layout */
+        .chat-split-layout {
+            display: flex;
+            height: 640px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .chat-sidebar {
+            width: 220px;
+            flex-shrink: 0;
+            background: var(--sidebar-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px 0 0 12px;
             display: flex;
             flex-direction: column;
-            height: 640px;
-            background: transparent;
             overflow: hidden;
-            width: 100%;
-            max-width: 720px;
-            margin: 0 auto;
+        }
+
+        .new-chat-btn {
+            margin: 12px;
+            padding: 8px 14px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: var(--font-main);
+            transition: background var(--transition-speed);
+        }
+        .new-chat-btn:hover { background: var(--primary-hover); }
+
+        .chat-session-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 4px 8px 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .chat-session-list::-webkit-scrollbar { width: 4px; }
+        .chat-session-list::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
+
+        .session-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            gap: 6px;
+            transition: background var(--transition-speed);
+        }
+        .session-item:hover { background: #ede9e0; }
+        .session-item.active { background: #fff; border-color: var(--primary); }
+
+        .session-item-body { flex: 1; min-width: 0; }
+        .session-item-title {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .session-item-time { font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; }
+
+        .session-delete-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            cursor: pointer;
+            padding: 2px 5px;
+            border-radius: 4px;
+            flex-shrink: 0;
+            transition: color var(--transition-speed), background var(--transition-speed);
+        }
+        .session-delete-btn:hover { color: var(--danger); background: var(--danger-light); }
+
+        .session-delete-confirm {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+        }
+        .session-delete-confirm button {
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 1px 6px;
+            cursor: pointer;
+            font-size: 0.72rem;
+            font-family: var(--font-main);
+        }
+        .confirm-yes { background: var(--danger-light); color: var(--danger); border-color: var(--danger) !important; }
+        .confirm-no { background: #fff; color: var(--text-secondary); }
+
+        /* Chat Main Panel */
+        .chat-main-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-left: none;
+            border-radius: 0 12px 12px 0;
+            overflow: hidden;
+        }
+
+        .chat-session-title {
+            padding: 12px 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-shrink: 0;
         }
 
         .chat-messages {
             flex: 1;
             overflow-y: auto;
-            background: transparent;
-            padding: 24px 8px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 20px;
         }
-
-        .chat-messages::-webkit-scrollbar {
-            width: 5px;
-        }
-        .chat-messages::-webkit-scrollbar-thumb {
-            background-color: var(--border-color);
-            border-radius: 3px;
-        }
+        .chat-messages::-webkit-scrollbar { width: 5px; }
+        .chat-messages::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 3px; }
 
         .chat-bubble-container {
             display: flex;
@@ -536,19 +642,15 @@
             font-size: 0.92rem;
             line-height: 1.55;
             word-wrap: break-word;
-            transition: all 0.2s ease-in-out;
         }
-
         .chat-bubble-container.user {
             align-self: flex-end;
-            background: #f4f0ea; /* Clean light sand */
+            background: #f4f0ea;
             color: var(--text-primary);
             border-radius: 14px 14px 2px 14px;
             border: 1px solid var(--border-color);
             padding: 10px 16px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
         }
-
         .chat-bubble-container.agent {
             align-self: flex-start;
             background: transparent;
@@ -569,48 +671,84 @@
             align-items: center;
             gap: 6px;
         }
-
         .chat-bubble-meta {
             font-size: 0.7rem;
             margin-top: 6px;
             opacity: 0.6;
             font-family: monospace;
         }
+        .chat-bubble-meta.user { text-align: right; color: var(--text-secondary); }
+        .chat-bubble-meta.agent { text-align: left; color: var(--text-muted); }
 
-        .chat-bubble-meta.user {
+        .chat-attachment-display { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+        .attachment-chip-display {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            background: #f4f0ea;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
             color: var(--text-secondary);
-            text-align: right;
         }
 
-        .chat-bubble-meta.agent {
-            color: var(--text-muted);
-            text-align: left;
-        }
-
-        .chat-input-bar {
+        /* Input area */
+        .chat-attachment-chips {
             display: flex;
-            padding: 16px 0 24px 0;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 0 16px 6px;
+            min-height: 0;
+        }
+        .attachment-chip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.78rem;
+            padding: 4px 10px;
+            background: var(--primary-light);
+            border: 1px solid rgba(217, 107, 67, 0.25);
+            border-radius: 12px;
+            color: var(--primary);
+            font-weight: 500;
+        }
+        .attachment-chip.uploading { opacity: 0.6; }
+        .attachment-chip-remove {
             background: transparent;
-            width: 100%;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 0.9rem;
+            line-height: 1;
+            padding: 0;
         }
 
+        .chat-input-bar { padding: 8px 16px 16px; }
         .chat-input-pill {
             display: flex;
             align-items: center;
-            background: #ffffff;
+            background: #fff;
             border: 1px solid var(--border-color);
             border-radius: 24px;
-            padding: 5px 5px 5px 18px;
-            width: 100%;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
-            transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+            padding: 5px 5px 5px 8px;
+            gap: 4px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.02);
+            transition: border-color var(--transition-speed);
         }
-
         .chat-input-pill:focus-within {
             border-color: var(--primary);
             box-shadow: 0 4px 20px rgba(217, 107, 67, 0.06);
         }
-
+        .chat-attach-btn {
+            background: transparent;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: 6px;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            transition: color var(--transition-speed);
+        }
+        .chat-attach-btn:hover { color: var(--primary); }
         .chat-input-field {
             flex: 1;
             border: none;
@@ -621,31 +759,24 @@
             color: var(--text-primary);
             padding: 6px 0;
         }
-
         .chat-send-btn {
             width: 34px;
             height: 34px;
             border-radius: 50%;
             background: var(--primary);
-            color: #ffffff;
+            color: #fff;
             border: none;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: background var(--transition-speed), transform 0.1s;
             font-size: 1.15rem;
             font-weight: bold;
-            line-height: 1;
+            flex-shrink: 0;
+            transition: background var(--transition-speed), transform 0.1s;
         }
-
-        .chat-send-btn:hover {
-            background: var(--primary-hover);
-        }
-
-        .chat-send-btn:active {
-            transform: scale(0.95);
-        }
+        .chat-send-btn:hover { background: var(--primary-hover); }
+        .chat-send-btn:active { transform: scale(0.95); }
 
         .chat-card-review {
             background: #ffffff;
@@ -885,28 +1016,42 @@
 
         <!-- TAB 6: CHAT -->
         <div id="panel-chat" class="tab-panel">
-            <div class="chat-container">
-                <div class="chat-messages" id="chat-messages">
-                    <div class="chat-bubble-container agent">
-                        <div class="chat-agent-header">✦ Agent Echo</div>
-                        <div>
-                            👋 Hello! I am Agent Echo, your autonomous developer content assistant. 
-                            <br><br>
-                            You can ask me to:
-                            <br>• <i>"create a post about PostgreSQL indexes"</i> (supports formats: text, image, video, poll)
-                            <br>• <i>"approve draft 12"</i>
-                            <br>• <i>"reschedule draft 12 for tomorrow 3pm"</i>
-                            <br>• <i>"skip draft 12"</i>
-                            <br>• <i>"show queue"</i>
-                            <br>• <i>"metrics summary"</i>
-                        </div>
-                        <div class="chat-bubble-meta agent">SYSTEM INITIALIZED</div>
-                    </div>
+            <div class="chat-split-layout">
+                <div class="chat-sidebar">
+                    <button class="new-chat-btn" onclick="createNewSession()">＋ New Chat</button>
+                    <div class="chat-session-list" id="chat-session-list"></div>
                 </div>
-                <div class="chat-input-bar">
-                    <div class="chat-input-pill">
-                        <input type="text" id="chat-input" placeholder="Type a message or command..." class="chat-input-field" onkeypress="handleChatKeyPress(event)">
-                        <button onclick="sendChatMessage()" class="chat-send-btn">↑</button>
+                <div class="chat-main-panel">
+                    <div class="chat-session-title" id="chat-session-title">New conversation</div>
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="chat-bubble-container agent">
+                            <div class="chat-agent-header">✦ Agent Echo</div>
+                            <div>
+                                👋 Hello! I am Agent Echo, your autonomous developer content assistant.
+                                <br><br>You can ask me to:
+                                <br>• <i>"create a post about PostgreSQL indexes"</i>
+                                <br>• <i>"approve draft 12"</i> &nbsp;• <i>"skip draft 12"</i>
+                                <br>• <i>"reschedule draft 12 for tomorrow 3pm"</i>
+                                <br>• <i>"show queue"</i> &nbsp;• <i>"metrics summary"</i>
+                                <br>• Attach a PDF and ask me to create a post about it
+                                <br>• Attach an image or video to include in your post
+                            </div>
+                            <div class="chat-bubble-meta agent">SYSTEM INITIALIZED</div>
+                        </div>
+                    </div>
+                    <div class="chat-attachment-chips" id="chat-attachment-chips"></div>
+                    <div class="chat-input-bar">
+                        <div class="chat-input-pill">
+                            <button class="chat-attach-btn" title="Attach file"
+                                onclick="document.getElementById('file-upload-input').click()">📎</button>
+                            <input type="file" id="file-upload-input" multiple
+                                accept=".pdf,.png,.jpg,.jpeg,.gif,.mp4,.mov,.webm"
+                                style="display:none" onchange="handleFileSelect(event)">
+                            <input type="text" id="chat-input" class="chat-input-field"
+                                placeholder="Type a message or command..."
+                                onkeypress="handleChatKeyPress(event)">
+                            <button onclick="sendChatMessage()" class="chat-send-btn">↑</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -935,6 +1080,163 @@
                 total_impressions: 0
             }
         };
+
+        // Chat session state
+        let activeChatSessionId = null;
+        let pendingAttachments = [];
+
+        async function loadChatSessions() {
+            try {
+                const res = await fetch('/api/chats');
+                const sessions = await res.json();
+                renderSessionList(sessions);
+                if (sessions.length > 0 && activeChatSessionId === null) {
+                    await switchSession(sessions[0].id, sessions[0].title);
+                }
+            } catch (e) {
+                console.error('Failed to load chat sessions:', e);
+            }
+        }
+
+        function renderSessionList(sessions) {
+            const list = document.getElementById('chat-session-list');
+            if (!sessions.length) {
+                list.innerHTML = '<div style="font-size:0.78rem;color:var(--text-muted);padding:8px 10px;">No conversations yet</div>';
+                return;
+            }
+            list.innerHTML = sessions.map(s => {
+                const title = s.title || 'New conversation';
+                const truncated = title.length > 28 ? title.slice(0, 28) + '…' : title;
+                const isActive = s.id === activeChatSessionId;
+                return `<div class="session-item ${isActive ? 'active' : ''}" id="session-item-${s.id}"
+                    onclick="switchSession(${s.id}, ${JSON.stringify(title)})">
+                  <div class="session-item-body">
+                    <div class="session-item-title">${escapeHtml(truncated)}</div>
+                    <div class="session-item-time">${relativeTime(s.updated_at)}</div>
+                  </div>
+                  <button class="session-delete-btn"
+                    onclick="event.stopPropagation();confirmDeleteSession(${s.id})" title="Delete">×</button>
+                </div>`;
+            }).join('');
+        }
+
+        function relativeTime(isoStr) {
+            if (!isoStr) return '';
+            const diff = Date.now() - new Date(isoStr + 'Z').getTime();
+            const mins = Math.floor(diff / 60000);
+            if (mins < 1) return 'just now';
+            if (mins < 60) return `${mins}m ago`;
+            const hrs = Math.floor(mins / 60);
+            if (hrs < 24) return `${hrs}h ago`;
+            return `${Math.floor(hrs / 24)}d ago`;
+        }
+
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        async function createNewSession() {
+            const res = await fetch('/api/chats', { method: 'POST' });
+            const session = await res.json();
+            activeChatSessionId = session.id;
+            document.getElementById('chat-session-title').textContent = 'New conversation';
+            document.getElementById('chat-messages').innerHTML = `
+                <div class="chat-bubble-container agent">
+                    <div class="chat-agent-header">✦ Agent Echo</div>
+                    <div>New conversation started. What would you like to do?</div>
+                    <div class="chat-bubble-meta agent">READY</div>
+                </div>`;
+            messageIdCounter = 0;
+            pendingAttachments = [];
+            document.getElementById('chat-attachment-chips').innerHTML = '';
+            await loadChatSessions();
+        }
+
+        async function switchSession(sessionId, title) {
+            activeChatSessionId = sessionId;
+            document.getElementById('chat-session-title').textContent = title || 'New conversation';
+            pendingAttachments = [];
+            document.getElementById('chat-attachment-chips').innerHTML = '';
+            document.querySelectorAll('.session-item').forEach(el => el.classList.remove('active'));
+            const activeEl = document.getElementById(`session-item-${sessionId}`);
+            if (activeEl) activeEl.classList.add('active');
+
+            try {
+                const res = await fetch(`/api/chats/${sessionId}/messages`);
+                const messages = await res.json();
+                const container = document.getElementById('chat-messages');
+                if (!messages.length) {
+                    container.innerHTML = `<div class="chat-bubble-container agent">
+                        <div class="chat-agent-header">✦ Agent Echo</div>
+                        <div>👋 Hello! I am Agent Echo. What would you like to create today?</div>
+                        <div class="chat-bubble-meta agent">READY</div>
+                    </div>`;
+                    return;
+                }
+                container.innerHTML = '';
+                messageIdCounter = 0;
+                messages.forEach(msg => {
+                    const div = document.createElement('div');
+                    div.id = `chat-msg-${++messageIdCounter}`;
+                    div.className = `chat-bubble-container ${msg.role}`;
+                    const timeStr = msg.created_at ? msg.created_at.substring(11, 16) : '';
+                    let attHtml = '';
+                    if (msg.attachments_json) {
+                        try {
+                            const atts = JSON.parse(msg.attachments_json);
+                            if (atts && atts.length) {
+                                const icons = { pdf: '📄', image: '🖼', video: '🎥' };
+                                attHtml = `<div class="chat-attachment-display">${atts.map(a =>
+                                    `<span class="attachment-chip-display">${icons[a.type] || '📎'} ${escapeHtml(a.filename)}</span>`
+                                ).join('')}</div>`;
+                            }
+                        } catch(e) {}
+                    }
+                    if (msg.role === 'agent') {
+                        div.innerHTML = `<div class="chat-agent-header">✦ Agent Echo</div>
+                            <div>${msg.content}</div>
+                            <div class="chat-bubble-meta agent">${timeStr}</div>`;
+                    } else {
+                        div.innerHTML = `<div>${escapeHtml(msg.content)}</div>
+                            ${attHtml}
+                            <div class="chat-bubble-meta user">${timeStr}</div>`;
+                    }
+                    container.appendChild(div);
+                });
+                container.scrollTop = container.scrollHeight;
+            } catch (e) {
+                console.error('Failed to load messages:', e);
+            }
+        }
+
+        function confirmDeleteSession(sessionId) {
+            const item = document.getElementById(`session-item-${sessionId}`);
+            if (!item) return;
+            const deleteBtn = item.querySelector('.session-delete-btn');
+            if (deleteBtn) deleteBtn.style.display = 'none';
+            const confirm = document.createElement('div');
+            confirm.className = 'session-delete-confirm';
+            confirm.innerHTML = `Delete?
+                <button class="confirm-yes" onclick="executeDeleteSession(${sessionId})">Yes</button>
+                <button class="confirm-no" onclick="loadChatSessions()">No</button>`;
+            item.appendChild(confirm);
+        }
+
+        async function executeDeleteSession(sessionId) {
+            await fetch(`/api/chats/${sessionId}`, { method: 'DELETE' });
+            if (activeChatSessionId === sessionId) {
+                activeChatSessionId = null;
+                document.getElementById('chat-session-title').textContent = 'New conversation';
+                document.getElementById('chat-messages').innerHTML = `<div class="chat-bubble-container agent">
+                    <div class="chat-agent-header">✦ Agent Echo</div>
+                    <div>Conversation deleted. Start a new one with the button on the left.</div>
+                    <div class="chat-bubble-meta agent">READY</div>
+                </div>`;
+            }
+            await loadChatSessions();
+        }
 
         // Charts singletons
         let eventsChartInstance = null;
@@ -975,6 +1277,8 @@
                 setTimeout(buildOverviewChart, 100);
             } else if (tabId === 'analytics') {
                 setTimeout(buildPerformanceChart, 100);
+            } else if (tabId === 'chat') {
+                loadChatSessions();
             }
         }
 
@@ -1523,6 +1827,7 @@
         // Initialize dashboard sync loop
         fetchSystemData();
         setInterval(fetchSystemData, 5000); // Poll database state every 5 seconds
+        loadChatSessions();
     </script>
 </body>
 </html>

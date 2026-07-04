@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Echo // Control Console</title>
+    <!-- Custom Google Fonts (Outfit & Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Chart.js for minimalist charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-base: #fbfaf7;
+            --bg-card: #ffffff;
+            --sidebar-bg: #f3f0e9;
+            --border-color: #e8e4dc;
+            --primary: #d96b43;
+            --primary-hover: #c85a32;
+            --primary-light: #fdf5f0;
+            --success: #15803d;
+            --success-light: #f0fdf4;
+            --warning: #b45309;
+            --warning-light: #fef3c7;
+            --danger: #b91c1c;
+            --danger-light: #fef2f2;
+            --text-primary: #191919;
+            --text-secondary: #5c564f;
+            --text-muted: #9c968f;
+            --font-main: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+            --transition-speed: 0.25s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 32px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.01);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-indicator {
+            width: 10px;
+            height: 10px;
+            background-color: var(--primary);
+            border-radius: 50%;
+        }
+
+        .logo-title {
+            font-weight: 700;
+            font-size: 1.15rem;
+            letter-spacing: -0.5px;
+            color: var(--text-primary);
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 4px;
+            background: #faf8f5;
+            padding: 4px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            border-radius: 16px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.85rem;
+            padding: 6px 16px;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn:hover {
+            color: var(--primary);
+            background: #ffffff;
+        }
+
+        .nav-btn.active {
+            color: var(--primary);
+            background: #ffffff;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .system-status {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--success);
+            background: var(--success-light);
+            padding: 4px 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(21, 128, 61, 0.15);
+            letter-spacing: 0.5px;
+        }
+
+        .main-container {
+            flex: 1;
+            padding: 40px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* HUD Stats Row */
+        .hud-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .hud-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 20px -4px rgba(90, 80, 70, 0.02);
+            transition: transform var(--transition-speed), border-color var(--transition-speed);
+        }
+
+        .hud-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .hud-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .hud-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.1;
+            margin-bottom: 8px;
+            letter-spacing: -1px;
+        }
+
+        .hud-footer {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        /* Panel Cards */
+        .panel-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 28px;
+            box-shadow: 0 4px 20px -4px rgba(90, 80, 70, 0.02);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .panel-title {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--text-primary);
+            letter-spacing: -0.2px;
+        }
+
+        /* Tab Panels */
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        /* Overview Grid */
+        .overview-grid {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 24px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 320px;
+            width: 100%;
+        }
+
+        /* Terminal Console Logs */
+        .recent-logs-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.78rem;
+            max-height: 320px;
+            overflow-y: auto;
+            background: #FAF8F5;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            border-radius: 8px;
+            line-height: 1.4;
+        }
+
+        .recent-logs-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .recent-logs-list::-webkit-scrollbar-thumb {
+            background-color: var(--border-color);
+            border-radius: 3px;
+        }
+
+        .log-entry {
+            display: flex;
+            gap: 12px;
+        }
+
+        .log-time {
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        .log-text {
+            color: var(--text-secondary);
+            word-break: break-all;
+        }
+
+        .log-text.error { color: var(--danger); font-weight: 500; }
+        .log-text.success { color: var(--success); font-weight: 500; }
+
+        /* Filter Controls */
+        .filter-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-select {
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: #ffffff;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            outline: none;
+            cursor: pointer;
+            transition: border-color var(--transition-speed);
+        }
+
+        .filter-select:focus {
+            border-color: var(--primary);
+        }
+
+        /* Timeline Items */
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .timeline-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            transition: border-color var(--transition-speed);
+        }
+
+        .timeline-card:hover {
+            border-color: var(--primary);
+        }
+
+        .timeline-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .timeline-source {
+            font-weight: 700;
+            font-size: 0.68rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .timeline-source.git { background: #e0f2fe; color: #0369a1; }
+        .timeline-source.note { background: #f3e8ff; color: #6b21a8; }
+        .timeline-source.browser { background: #ffedd5; color: #c2410c; }
+        .timeline-source.file { background: #dcfce7; color: #15803d; }
+        .timeline-source.calendar { background: #fee2e2; color: #b91c1c; }
+
+        .timeline-time {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+
+        .timeline-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+        }
+
+        /* Draft Cards */
+        .drafts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+
+        .draft-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: 0 4px 20px -4px rgba(90, 80, 70, 0.02);
+            transition: border-color var(--transition-speed);
+        }
+
+        .draft-card:hover {
+            border-color: var(--primary);
+        }
+
+        .draft-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .draft-id-tag {
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--primary);
+        }
+
+        .status-badge {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge.pending_review { background: var(--warning-light); color: var(--warning); }
+        .status-badge.approved { background: var(--success-light); color: var(--success); }
+        .status-badge.published { background: #e0f2fe; color: #0369a1; }
+        .status-badge.rejected { background: var(--danger-light); color: var(--danger); }
+
+        .draft-metadata-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .draft-meta-chip {
+            font-size: 0.78rem;
+            background: #faf8f5;
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .draft-content {
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            line-height: 1.5;
+            background: #faf8f5;
+            padding: 16px;
+            border-radius: 8px;
+            max-height: 160px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            border: 1px solid var(--border-color);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .draft-content::-webkit-scrollbar {
+            width: 4px;
+        }
+        .draft-content::-webkit-scrollbar-thumb {
+            background-color: var(--border-color);
+            border-radius: 2px;
+        }
+
+        .draft-media-box {
+            font-size: 0.8rem;
+            background: #faf8f5;
+            border: 1px dashed var(--border-color);
+            padding: 12px;
+            border-radius: 8px;
+            color: var(--text-secondary);
+        }
+
+        .draft-hashtags {
+            font-size: 0.8rem;
+            color: var(--primary);
+            font-family: monospace;
+            word-break: break-all;
+        }
+
+        /* Queue List */
+        .queue-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .queue-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px 24px;
+            transition: border-color var(--transition-speed);
+        }
+
+        .queue-item:hover {
+            border-color: var(--primary);
+        }
+
+        .queue-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .queue-time {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .queue-desc {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            padding: 40px 0;
+            font-style: italic;
+        }
+
+        /* Chat Console - Clean Minimalist Redesign */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 640px;
+            background: transparent;
+            overflow: hidden;
+            width: 100%;
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            background: transparent;
+            padding: 24px 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 5px;
+        }
+        .chat-messages::-webkit-scrollbar-thumb {
+            background-color: var(--border-color);
+            border-radius: 3px;
+        }
+
+        .chat-bubble-container {
+            display: flex;
+            flex-direction: column;
+            max-width: 85%;
+            font-size: 0.92rem;
+            line-height: 1.55;
+            word-wrap: break-word;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .chat-bubble-container.user {
+            align-self: flex-end;
+            background: #f4f0ea; /* Clean light sand */
+            color: var(--text-primary);
+            border-radius: 14px 14px 2px 14px;
+            border: 1px solid var(--border-color);
+            padding: 10px 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+        }
+
+        .chat-bubble-container.agent {
+            align-self: flex-start;
+            background: transparent;
+            color: var(--text-primary);
+            border-left: 2px solid var(--primary);
+            padding: 2px 0 8px 16px;
+            max-width: 100%;
+        }
+
+        .chat-agent-header {
+            font-weight: 700;
+            font-size: 0.72rem;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chat-bubble-meta {
+            font-size: 0.7rem;
+            margin-top: 6px;
+            opacity: 0.6;
+            font-family: monospace;
+        }
+
+        .chat-bubble-meta.user {
+            color: var(--text-secondary);
+            text-align: right;
+        }
+
+        .chat-bubble-meta.agent {
+            color: var(--text-muted);
+            text-align: left;
+        }
+
+        .chat-input-bar {
+            display: flex;
+            padding: 16px 0 24px 0;
+            background: transparent;
+            width: 100%;
+        }
+
+        .chat-input-pill {
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 5px 5px 5px 18px;
+            width: 100%;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+            transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+        }
+
+        .chat-input-pill:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 4px 20px rgba(217, 107, 67, 0.06);
+        }
+
+        .chat-input-field {
+            flex: 1;
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 0.9rem;
+            font-family: var(--font-main);
+            color: var(--text-primary);
+            padding: 6px 0;
+        }
+
+        .chat-send-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background var(--transition-speed), transform 0.1s;
+            font-size: 1.15rem;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .chat-send-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .chat-send-btn:active {
+            transform: scale(0.95);
+        }
+
+        .chat-card-review {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(90, 80, 70, 0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .chat-card-title {
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .chat-card-content {
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            line-height: 1.5;
+            background: #faf8f5;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            white-space: pre-wrap;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .chat-card-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+        }
+
+        .chat-card-badge {
+            background: #f4f0ea;
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            font-weight: 500;
+        }
+
+        .chat-action-btn-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .chat-action-btn {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 6px 14px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-speed);
+        }
+
+        .chat-action-btn:hover {
+            color: var(--primary);
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .chat-action-btn.approve-btn {
+            color: var(--success);
+            border-color: rgba(21, 128, 61, 0.2);
+        }
+
+        .chat-action-btn.approve-btn:hover {
+            background: var(--success-light);
+            border-color: var(--success);
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            background: #ffffff;
+            margin-top: auto;
+            letter-spacing: 0.2px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-section">
+            <div class="logo-indicator"></div>
+            <h1 class="logo-title">Agent Echo</h1>
+        </div>
+        <nav class="header-nav">
+            <button class="nav-btn active" onclick="switchTab('overview', this)">Overview</button>
+            <button class="nav-btn" onclick="switchTab('activity', this)">Activity</button>
+            <button class="nav-btn" onclick="switchTab('drafts', this)">Drafts</button>
+            <button class="nav-btn" onclick="switchTab('queue', this)">Queue</button>
+            <button class="nav-btn" onclick="switchTab('analytics', this)">Metrics</button>
+            <button class="nav-btn" onclick="switchTab('chat', this)">Chat</button>
+        </nav>
+        <div class="system-status" id="system-status">
+            <span>● CONNECTED</span>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- HUD Cards Row -->
+        <div class="hud-stats-grid">
+            <div class="hud-card">
+                <div class="hud-label">Tracked Events</div>
+                <div class="hud-value" id="hud-events">0</div>
+                <div class="hud-footer" id="hud-events-footer">0 in past 24h</div>
+            </div>
+            <div class="hud-card">
+                <div class="hud-label">Generated Drafts</div>
+                <div class="hud-value" id="hud-drafts">0</div>
+                <div class="hud-footer" id="hud-drafts-footer">0 pending review</div>
+            </div>
+            <div class="hud-card">
+                <div class="hud-label">Active Queue</div>
+                <div class="hud-value" id="hud-queue">0</div>
+                <div class="hud-footer" id="hud-queue-footer">Next publish pending</div>
+            </div>
+            <div class="hud-card">
+                <div class="hud-label">Published Posts</div>
+                <div class="hud-value" id="hud-published">0</div>
+                <div class="hud-footer" id="hud-published-footer">0 total impressions</div>
+            </div>
+        </div>
+
+        <!-- TAB 1: OVERVIEW -->
+        <div id="panel-overview" class="tab-panel active">
+            <div class="overview-grid">
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <div class="panel-title">System Activity</div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="chart-events-overview"></canvas>
+                    </div>
+                </div>
+                <div class="panel-card">
+                    <div class="panel-header">
+                        <div class="panel-title">Execution logs</div>
+                    </div>
+                    <div class="recent-logs-list" id="logs-list">
+                        <div class="empty-state">Loading logs...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: ACTIVITY WATCH -->
+        <div id="panel-activity" class="tab-panel">
+            <div class="panel-card">
+                <div class="panel-header">
+                    <div class="panel-title">Developer Events</div>
+                    <div class="filter-group">
+                        <select id="filter-activity-source" class="filter-select" onchange="renderActivity()">
+                            <option value="all">All Sources</option>
+                            <option value="git">GitHub</option>
+                            <option value="note">Notion</option>
+                            <option value="browser">Browser tabs</option>
+                            <option value="file">File changes</option>
+                            <option value="calendar">Calendar</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="timeline" id="timeline-list">
+                    <div class="empty-state">No events found.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: DRAFTS VAULT -->
+        <div id="panel-drafts" class="tab-panel">
+            <div class="panel-card">
+                <div class="panel-header">
+                    <div class="panel-title">Post Drafts</div>
+                    <div class="filter-group">
+                        <select id="filter-drafts-status" class="filter-select" onchange="renderDrafts()">
+                            <option value="all">All Statuses</option>
+                            <option value="pending_review">Pending Review</option>
+                            <option value="approved">Approved</option>
+                            <option value="published">Published</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                        <select id="filter-drafts-format" class="filter-select" onchange="renderDrafts()">
+                            <option value="all">All Formats</option>
+                            <option value="text">Text</option>
+                            <option value="image">Image</option>
+                            <option value="video">Video</option>
+                            <option value="poll">Poll</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="drafts-grid" id="drafts-container">
+                    <div class="empty-state" style="grid-column: span 2;">No drafts found.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: QUEUE PIPELINE -->
+        <div id="panel-queue" class="tab-panel">
+            <div class="panel-card">
+                <div class="panel-header">
+                    <div class="panel-title">Posting Pipeline Queue</div>
+                </div>
+                <div class="queue-list" id="queue-container">
+                    <div class="empty-state">No posts scheduled in the active queue.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: ANALYTICS -->
+        <div id="panel-analytics" class="tab-panel">
+            <div class="panel-card">
+                <div class="panel-header">
+                    <div class="panel-title">Audience Performance</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chart-performance"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 6: CHAT -->
+        <div id="panel-chat" class="tab-panel">
+            <div class="chat-container">
+                <div class="chat-messages" id="chat-messages">
+                    <div class="chat-bubble-container agent">
+                        <div class="chat-agent-header">✦ Agent Echo</div>
+                        <div>
+                            👋 Hello! I am Agent Echo, your autonomous developer content assistant. 
+                            <br><br>
+                            You can ask me to:
+                            <br>• <i>"create a post about PostgreSQL indexes"</i> (supports formats: text, image, video, poll)
+                            <br>• <i>"approve draft 12"</i>
+                            <br>• <i>"reschedule draft 12 for tomorrow 3pm"</i>
+                            <br>• <i>"skip draft 12"</i>
+                            <br>• <i>"show queue"</i>
+                            <br>• <i>"metrics summary"</i>
+                        </div>
+                        <div class="chat-bubble-meta agent">SYSTEM INITIALIZED</div>
+                    </div>
+                </div>
+                <div class="chat-input-bar">
+                    <div class="chat-input-pill">
+                        <input type="text" id="chat-input" placeholder="Type a message or command..." class="chat-input-field" onkeypress="handleChatKeyPress(event)">
+                        <button onclick="sendChatMessage()" class="chat-send-btn">↑</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Agent Echo // Localtime: <span id="footer-time"></span>
+    </footer>
+
+    <script>
+        // Global variables holding API data
+        let state = {
+            events: [],
+            drafts: [],
+            queue: [],
+            performance: [],
+            runs: [],
+            stats: {
+                events_count: 0,
+                events_24h: 0,
+                drafts_count: 0,
+                drafts_pending: 0,
+                queue_count: 0,
+                published_count: 0,
+                total_impressions: 0
+            }
+        };
+
+        // Charts singletons
+        let eventsChartInstance = null;
+        let performanceChartInstance = null;
+
+        // Sync Clock
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('footer-time').innerText = now.toLocaleTimeString();
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Switch panel tabs
+        function switchTab(tabId, btnElement = null) {
+            // Update active nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            if (btnElement) {
+                btnElement.classList.add('active');
+            } else {
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tabId)) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+
+            // Update active panel display
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            document.getElementById(`panel-${tabId}`).classList.add('active');
+
+            // Trigger chart rebuilds if relevant
+            if (tabId === 'overview') {
+                setTimeout(buildOverviewChart, 100);
+            } else if (tabId === 'analytics') {
+                setTimeout(buildPerformanceChart, 100);
+            }
+        }
+
+        // Poll API Data
+        async function fetchSystemData() {
+            try {
+                const response = await fetch('/api/data');
+                if (!response.ok) throw new Error("API call failed");
+                const data = await response.json();
+                
+                // Update local memory state
+                state.events = data.events || [];
+                state.drafts = data.drafts || [];
+                state.queue = data.queue || [];
+                state.performance = data.performance || [];
+                state.runs = data.runs || [];
+                state.stats = data.stats || state.stats;
+
+                // Refresh HUD stats
+                updateHUD();
+
+                // Refresh active modules
+                renderLogs();
+                renderActivity();
+                renderDrafts();
+                renderQueue();
+                
+                // Check active tab to reload charts
+                const activeNav = document.querySelector('.nav-btn.active');
+                if (activeNav) {
+                    const activeTabName = activeNav.innerText.toLowerCase();
+                    if (activeTabName.includes('overview')) {
+                        buildOverviewChart();
+                    } else if (activeTabName.includes('analytics')) {
+                        buildPerformanceChart();
+                    }
+                }
+
+                document.getElementById('system-status').innerText = "● CONNECTED";
+                document.getElementById('system-status').style.color = "var(--success)";
+                document.getElementById('system-status').style.background = "var(--success-light)";
+                document.getElementById('system-status').style.borderColor = "rgba(16, 185, 129, 0.1)";
+            } catch (err) {
+                console.error("Error synchronizing system data:", err);
+                document.getElementById('system-status').innerText = "▲ OFFLINE";
+                document.getElementById('system-status').style.color = "var(--danger)";
+                document.getElementById('system-status').style.background = "var(--danger-light)";
+                document.getElementById('system-status').style.borderColor = "rgba(239, 68, 68, 0.1)";
+            }
+        }
+
+        function updateHUD() {
+            document.getElementById('hud-events').innerText = state.stats.events_count;
+            document.getElementById('hud-events-footer').innerText = `${state.stats.events_24h} in past 24h`;
+
+            document.getElementById('hud-drafts').innerText = state.stats.drafts_count;
+            document.getElementById('hud-drafts-footer').innerText = `${state.stats.drafts_pending} pending review`;
+
+            document.getElementById('hud-queue').innerText = state.stats.queue_count;
+            if (state.queue && state.queue.length > 0) {
+                const next = state.queue[0];
+                document.getElementById('hud-queue-footer').innerText = `Next release: ${next.scheduled_time.substring(0, 16).replace('T', ' ')}`;
+            } else {
+                document.getElementById('hud-queue-footer').innerText = "Pipeline queue empty";
+            }
+
+            document.getElementById('hud-published').innerText = state.stats.published_count;
+            document.getElementById('hud-published-footer').innerText = `${state.stats.total_impressions} total impressions`;
+        }
+
+        function renderLogs() {
+            const list = document.getElementById('logs-list');
+            if (!state.runs || state.runs.length === 0) {
+                list.innerHTML = `<div class="empty-state">No trace logs recorded.</div>`;
+                return;
+            }
+
+            let html = "";
+            state.runs.forEach(run => {
+                const isErr = run.status === 'failed';
+                const time = run.started_at ? run.started_at.substring(11, 19) : "";
+                const duration = run.completed_at ? `${((new Date(run.completed_at) - new Date(run.started_at))/1000).toFixed(1)}s` : "running";
+                
+                html += `
+                    <div class="log-entry">
+                        <span class="log-time">[${time}]</span>
+                        <span class="log-text ${isErr ? 'error' : (run.status === 'completed' ? 'success' : '')}">
+                            [${run.component.toUpperCase()}] ${run.status.toUpperCase()} (${duration}) ${run.error_message ? '- ' + run.error_message : ''}
+                        </span>
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+        }
+
+        function formatEventDetails(item) {
+            if (!item.detail) return "";
+            try {
+                const parsed = typeof item.detail === 'string' ? JSON.parse(item.detail) : item.detail;
+                const src = item.source.toLowerCase();
+                
+                if (src === 'browser') {
+                    const url = parsed.url || "";
+                    const title = parsed.title || url;
+                    if (url) {
+                        return `
+                            <div class="event-details-formatted">
+                                <span>🌐 Visited page:</span> 
+                                <a href="${url}" target="_blank" class="event-link">${title}</a>
+                            </div>
+                        `;
+                    }
+                }
+                
+                if (src === 'git') {
+                    let html = `<div class="event-details-formatted">`;
+                    if (parsed.repo) {
+                        html += `<div><strong>Repository:</strong> ${parsed.repo}</div>`;
+                    }
+                    if (parsed.commits && parsed.commits.length > 0) {
+                        html += `<div style="margin-top: 6px;"><strong>Commits:</strong></div>`;
+                        html += `<ul style="margin-left: 16px; margin-top: 4px; font-size: 0.8rem; color: var(--text-secondary);">`;
+                        parsed.commits.forEach(c => {
+                            html += `<li>${c}</li>`;
+                        });
+                        html += `</ul>`;
+                    }
+                    if (parsed.pr_title) {
+                        html += `<div><strong>PR:</strong> ${parsed.pr_title} (${parsed.action || 'updated'})</div>`;
+                    }
+                    if (parsed.issue_title) {
+                        html += `<div><strong>Issue:</strong> ${parsed.issue_title} (${parsed.action || 'updated'})</div>`;
+                    }
+                    html += `</div>`;
+                    return html;
+                }
+                
+                if (src === 'file') {
+                    const path = parsed.file_path || "";
+                    const action = parsed.action || "";
+                    if (path) {
+                        return `
+                            <div class="event-details-formatted">
+                                📄 File <strong>${action}</strong>: <code class="event-code">${path}</code>
+                            </div>
+                        `;
+                    }
+                }
+
+                if (src === 'note') {
+                    const title = parsed.page_title || "";
+                    const action = parsed.action || "modified";
+                    return `
+                        <div class="event-details-formatted">
+                            📝 Notion page <strong>${action}</strong>: <span>${title}</span>
+                        </div>
+                    `;
+                }
+
+                if (src === 'calendar') {
+                    const summary = parsed.summary || "";
+                    const start = parsed.start ? parsed.start.replace('T', ' ').substring(0, 16) : "";
+                    return `
+                        <div class="event-details-formatted">
+                            📅 Event: <strong>${summary}</strong> (Starts: ${start})
+                        </div>
+                    `;
+                }
+                
+                // Fallback: render as list of keys/values if it's general JSON
+                let listHtml = `<div class="event-details-formatted" style="display: flex; flex-direction: column; gap: 4px;">`;
+                for (const [k, v] of Object.entries(parsed)) {
+                    if (k === 'github_event_id' || k === 'event_type') continue;
+                    listHtml += `<div><strong>${k}:</strong> ${typeof v === 'object' ? JSON.stringify(v) : v}</div>`;
+                }
+                listHtml += `</div>`;
+                return listHtml;
+            } catch (e) {
+                return `<pre class="timeline-desc">${item.detail}</pre>`;
+            }
+        }
+
+        function renderActivity() {
+            const list = document.getElementById('timeline-list');
+            const sourceFilter = document.getElementById('filter-activity-source').value;
+            
+            let filtered = state.events;
+            if (sourceFilter !== 'all') {
+                filtered = state.events.filter(e => e.source.toLowerCase() === sourceFilter);
+            }
+
+            if (filtered.length === 0) {
+                list.innerHTML = `<div class="empty-state">No events found.</div>`;
+                return;
+            }
+
+            let html = "";
+            filtered.forEach(item => {
+                const time = item.event_time ? item.event_time.replace('T', ' ').substring(0, 19) : "";
+                const detailsHtml = formatEventDetails(item);
+
+                html += `
+                    <div class="timeline-card">
+                        <div class="timeline-meta">
+                            <span class="timeline-source ${item.source.toLowerCase()}">${item.source}</span>
+                            <span class="timeline-time">${time} UTC</span>
+                        </div>
+                        <div class="timeline-title">${item.title}</div>
+                        ${detailsHtml}
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+        }
+
+        function renderDrafts() {
+            const container = document.getElementById('drafts-container');
+            const statusFilter = document.getElementById('filter-drafts-status').value;
+            const formatFilter = document.getElementById('filter-drafts-format').value;
+
+            let filtered = state.drafts;
+            if (statusFilter !== 'all') {
+                filtered = filtered.filter(d => d.status === statusFilter);
+            }
+            if (formatFilter !== 'all') {
+                filtered = filtered.filter(d => d.format_type === formatFilter);
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="empty-state" style="grid-column: span 2;">No drafts found.</div>`;
+                return;
+            }
+
+            let html = "";
+            filtered.forEach(draft => {
+                let mediaDisplay = "";
+                if (draft.media_refs_json) {
+                    try {
+                        const parsed = JSON.parse(draft.media_refs_json);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            mediaDisplay = `<div class="draft-media-box">📎 Media file: <b>${parsed[0].split('/').pop()}</b></div>`;
+                        } else if (typeof parsed === 'object') {
+                            if (parsed.question) {
+                                mediaDisplay = `
+                                    <div class="draft-media-box" style="border-color: rgba(79, 70, 229, 0.2); background: var(--primary-light); color: var(--primary);">
+                                        📊 Poll: <b>"${parsed.question}"</b> (${parsed.options ? parsed.options.join(', ') : ''})
+                                    </div>`;
+                            }
+                        }
+                    } catch(e) {}
+                }
+
+                html += `
+                    <div class="draft-card">
+                        <div class="draft-header">
+                            <span class="draft-id-tag">Draft #${draft.id}</span>
+                            <span class="status-badge ${draft.status}">${draft.status.replace('_', ' ')}</span>
+                        </div>
+                        <div class="draft-metadata-row">
+                            <span class="draft-meta-chip">Pillar: <b>${draft.pillar}</b></span>
+                            <span class="draft-meta-chip">Format: <b>${draft.format_type}</b></span>
+                        </div>
+                        <div class="draft-content">${draft.text_content}</div>
+                        ${mediaDisplay}
+                        <div class="draft-hashtags">${draft.hashtags || ""}</div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderQueue() {
+            const container = document.getElementById('queue-container');
+            if (!state.queue || state.queue.length === 0) {
+                container.innerHTML = `<div class="empty-state">No posts scheduled in the active queue.</div>`;
+                return;
+            }
+
+            let html = "";
+            state.queue.forEach(item => {
+                const time = item.scheduled_time ? item.scheduled_time.replace('T', ' ').substring(0, 16) : "";
+                html += `
+                    <div class="queue-item">
+                        <div class="queue-left">
+                            <span class="queue-time">Scheduled: ${time} UTC</span>
+                            <span class="queue-pillar">Pillar: ${item.pillar} · Format: ${item.format_type}</span>
+                        </div>
+                        <div class="queue-right">
+                            <span class="queue-priority">Prio: ${item.priority_score || 'N/A'}</span>
+                            <span class="status-badge approved">${item.status}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function buildOverviewChart() {
+            const ctx = document.getElementById('chart-events-overview').getContext('2d');
+            if (eventsChartInstance) {
+                eventsChartInstance.destroy();
+            }
+
+            // Distribute events by source
+            const counts = {};
+            state.events.forEach(e => {
+                counts[e.source] = (counts[e.source] || 0) + 1;
+            });
+
+            const labels = Object.keys(counts);
+            const data = Object.values(counts);
+
+            if (labels.length === 0) {
+                labels.push("No data");
+                data.push(0);
+            }
+
+            eventsChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Events Count',
+                        data: data,
+                        backgroundColor: '#d96b43',
+                        hoverBackgroundColor: '#c85a32',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            grid: { color: '#e5e2d9' },
+                            ticks: { color: '#57534e', font: { family: 'Inter' } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#57534e', font: { family: 'Inter' } }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        function buildPerformanceChart() {
+            const ctx = document.getElementById('chart-performance').getContext('2d');
+            if (performanceChartInstance) {
+                performanceChartInstance.destroy();
+            }
+
+            // Sort performance logs chronologically
+            const sorted = [...state.performance].sort((a,b) => new Date(a.recorded_at) - new Date(b.recorded_at));
+
+            const labels = sorted.map(p => p.recorded_at ? p.recorded_at.substring(5, 10) : "");
+            const impressions = sorted.map(p => p.impressions || 0);
+            const reactions = sorted.map(p => p.reactions || 0);
+            const comments = sorted.map(p => p.comments || 0);
+
+            if (labels.length === 0) {
+                labels.push("No data");
+                impressions.push(0);
+                reactions.push(0);
+                comments.push(0);
+            }
+
+            performanceChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Impressions',
+                            data: impressions,
+                            borderColor: '#d96b43',
+                            backgroundColor: 'transparent',
+                            tension: 0.1,
+                            borderWidth: 2,
+                            pointRadius: 3
+                        },
+                        {
+                            label: 'Reactions',
+                            data: reactions,
+                            borderColor: '#b45309',
+                            backgroundColor: 'transparent',
+                            tension: 0.1,
+                            borderWidth: 2,
+                            pointRadius: 3
+                        },
+                        {
+                            label: 'Comments',
+                            data: comments,
+                            borderColor: '#15803d',
+                            backgroundColor: 'transparent',
+                            tension: 0.1,
+                            borderWidth: 2,
+                            pointRadius: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            grid: { color: '#e5e2d9' },
+                            ticks: { color: '#57534e', font: { family: 'Inter' } }
+                        },
+                        x: {
+                            grid: { color: '#e5e2d9' },
+                            ticks: { color: '#57534e', font: { family: 'Inter' } }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#191919',
+                                font: { family: 'Inter', size: 11 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        let messageIdCounter = 0;
+
+        async function sendActionCommand(cmd) {
+            appendMessage('user', cmd);
+            const typingId = appendMessage('agent', '⚡ <i>Agent Echo is processing...</i>');
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: cmd })
+                });
+                removeMessage(typingId);
+                if (response.ok) {
+                    const data = await response.json();
+                    appendMessage('agent', data.response || "No response received.");
+                    fetchSystemData();
+                } else {
+                    const data = await response.json();
+                    appendMessage('agent', `❌ Error: ${data.error || "Failed to process command."}`);
+                }
+            } catch (err) {
+                removeMessage(typingId);
+                appendMessage('agent', `❌ Network error: ${err.message}`);
+            }
+        }
+
+        function promptReschedule(draftId) {
+            const time = prompt("Enter new schedule time (e.g., 'tomorrow 3pm', 'next monday noon'):");
+            if (time) {
+                sendActionCommand(`reschedule draft ${draftId} for ${time}`);
+            }
+        }
+
+        function promptEdit(draftId) {
+            const text = prompt("Enter the new text content/instructions for the post draft:");
+            if (text) {
+                sendActionCommand(`edit draft ${draftId} ${text}`);
+            }
+        }
+
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            input.value = '';
+            
+            // Append User Bubble
+            appendMessage('user', text);
+
+            // Append Typing Indicator
+            const typingId = appendMessage('agent', '⚡ <i>Agent Echo is thinking...</i>');
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text })
+                });
+                
+                // Remove Typing Indicator
+                removeMessage(typingId);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    appendMessage('agent', data.response || "No response received.");
+                } else {
+                    const data = await response.json();
+                    appendMessage('agent', `❌ Error: ${data.error || "Failed to process message."}`);
+                }
+            } catch (err) {
+                removeMessage(typingId);
+                appendMessage('agent', `❌ Network error: ${err.message}`);
+            }
+        }
+
+        function appendMessage(sender, text) {
+            const container = document.getElementById('chat-messages');
+            const msgId = `chat-msg-${++messageIdCounter}`;
+            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            const div = document.createElement('div');
+            div.id = msgId;
+            div.className = `chat-bubble-container ${sender}`;
+            if (sender === 'agent') {
+                div.innerHTML = `
+                    <div class="chat-agent-header">✦ Agent Echo</div>
+                    <div>${text}</div>
+                    <div class="chat-bubble-meta ${sender}">${timeStr}</div>
+                `;
+            } else {
+                div.innerHTML = `
+                    <div>${text}</div>
+                    <div class="chat-bubble-meta ${sender}">${timeStr}</div>
+                `;
+            }
+            container.appendChild(div);
+            
+            // Scroll to bottom of messages
+            container.scrollTop = container.scrollHeight;
+            return msgId;
+        }
+
+        function removeMessage(msgId) {
+            const el = document.getElementById(msgId);
+            if (el) {
+                el.remove();
+            }
+        }
+
+        // Initialize dashboard sync loop
+        fetchSystemData();
+        setInterval(fetchSystemData, 5000); // Poll database state every 5 seconds
+    </script>
+</body>
+</html>

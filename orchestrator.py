@@ -6,6 +6,10 @@ from dotenv import load_dotenv
 # Load env variables first
 load_dotenv()
 
+# Apply Anthropic -> OpenAI fallback patch
+import anthropic_fallback
+anthropic_fallback.apply_patch()
+
 from config_loader import LOCAL_TZ
 from capture.browser_watcher import capture_active_browser_tab
 from capture.github_watcher import fetch_and_store_github_events

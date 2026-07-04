@@ -8,6 +8,10 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+# Apply Anthropic -> OpenAI fallback patch
+import anthropic_fallback
+anthropic_fallback.apply_patch()
+
 from db.db import init_db, get_db_connection
 
 
@@ -667,6 +671,19 @@ def telegram_bot_cmd():
         run_telegram_bot_foreground()
     except Exception as e:
         click.echo(f"Failed to start Telegram bot: {e}", err=True)
+
+
+@main.command("dashboard")
+@click.option("--port", type=int, default=8080, help="Port to run the dashboard server (default: 8080)")
+@click.option("--host", type=str, default="localhost", help="Host address (default: localhost)")
+def dashboard_cmd(host, port):
+    """Run the futuristic control console dashboard web server."""
+    click.echo(f"Starting Agent Echo Control Dashboard at http://{host}:{port}...")
+    try:
+        from dashboard_server import run_server
+        run_server(host=host, port=port)
+    except Exception as e:
+        click.echo(f"Failed to start dashboard server: {e}", err=True)
 
 
 if __name__ == "__main__":

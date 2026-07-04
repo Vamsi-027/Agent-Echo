@@ -176,10 +176,12 @@ def approve_draft(draft_id: int) -> None:
     conn.commit()
     conn.close()
 
-def edit_draft(draft_id: int, instruction: str) -> dict:
+def edit_draft(draft_id: int, instruction: str, prior_turns: list = None) -> dict:
     """
     Submits a revision instruction to Claude to regenerate a draft variant,
     saving the new variant in the DB and updating the old draft's status.
+    prior_turns: optional list of {"role": ..., "content": ...} dicts prepended as
+    conversation context to the Claude call.
     """
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -260,12 +262,13 @@ def edit_draft(draft_id: int, instruction: str) -> dict:
         "Please rewrite both posts incorporating the revision request, maintaining the LinkedIn character limit (<1300 chars) and the Twitter limit (snappy, under 280 chars)."
     )
     
+    leading_turns = prior_turns or []
     response = client.messages.create(
         model="claude-sonnet-4-6",
         max_tokens=1000,
         output_config={"format": {"type": "json_schema", "schema": edit_schema}},
         system=system_prompt,
-        messages=[{"role": "user", "content": user_prompt}]
+        messages=leading_turns + [{"role": "user", "content": user_prompt}]
     )
     
     response_data = json.loads(response.content[0].text)

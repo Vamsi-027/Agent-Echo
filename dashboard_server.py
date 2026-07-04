@@ -67,6 +67,15 @@ async def _process_intent(message: str, session_id=None, attached_media_paths=No
         try:
             run_daily_digest(today_str)
             drafts = generate_drafts_for_date(today_str)
+            if attached_media_paths:
+                media_conn = get_db_connection()
+                media_conn.execute(
+                    "UPDATE drafts SET media_refs_json = ? "
+                    "WHERE status = 'pending_review' AND created_at >= datetime('now', '-1 minute')",
+                    (json.dumps(attached_media_paths),)
+                )
+                media_conn.commit()
+                media_conn.close()
             conn.close()
             return f"Drafts generated from today's activity! Generated {len(drafts)} draft(s). Check the Drafts tab to review them."
         except Exception as e:
@@ -362,10 +371,22 @@ async def _process_intent(message: str, session_id=None, attached_media_paths=No
         if not instruction:
             conn.close()
             return f"Please specify what changes to make to Draft #{draft_id}. E.g.: 'edit draft {draft_id} make it shorter'"
-        
+
+        # Fetch session context for edit intent
+        prior_turns = []
+        if session_id:
+            ctx_conn = get_db_connection()
+            history = ctx_conn.execute(
+                "SELECT role, content FROM chat_messages "
+                "WHERE session_id = ? ORDER BY created_at DESC LIMIT 6",
+                (session_id,)
+            ).fetchall()
+            ctx_conn.close()
+            prior_turns = [{"role": r["role"], "content": r["content"]} for r in reversed(history)]
+
         try:
             from generator.draft_generator import edit_draft
-            new_draft = edit_draft(draft_id, instruction)
+            new_draft = edit_draft(draft_id, instruction, prior_turns=prior_turns)
             conn.close()
             
             draft_dict = dict(new_draft)

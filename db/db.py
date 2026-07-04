@@ -42,6 +42,22 @@ def init_db(schema_path: Path | None = None, db_path: Path | None = None) -> Non
         with open(schema_path, "r") as f:
             schema_sql = f.read()
         conn.executescript(schema_sql)
+        
+        # Perform dynamic schema updates for existing databases
+        cursor = conn.cursor()
+        new_columns = {
+            "drafts": ["visual_composition", "music_profile", "cut_type", "scene_graph_json", "twitter_text_content"],
+            "performance_log": ["visual_composition", "music_profile", "cut_type"],
+            "published_posts": ["twitter_tweet_id"],
+        }
+        for table, cols in new_columns.items():
+            cursor.execute(f"PRAGMA table_info({table});")
+            existing_cols = [row[1] for row in cursor.fetchall()]
+            if existing_cols: # check if table exists
+                for col in cols:
+                    if col not in existing_cols:
+                        cursor.execute(f"ALTER TABLE {table} ADD COLUMN {col} TEXT;")
+        
         conn.commit()
     finally:
         conn.close()

@@ -1,0 +1,35 @@
+LINKEDIN PROFILE & EXPERIENCE SUMMARY
+
+Handle: linkedin.com/in/vamsicheruku
+Username: Vamsi Cheruku
+Location: Saint Louis, MO, USA (originally Chennai, India)
+Email: vamsicheruku18@gmail.com, vamsicheruku027@gmail.com
+X/Twitter: @cheruku_vamsi
+Portfolio: vamsicheruku.com
+GitHub: GitHub.com/Vamsi-027
+
+CORE ROLE & VALUE PROPOSITION
+Systems Architect & Performance Engineer. "I don't just build systems—I engineer competitive advantages." Specialist in high-performance, scalable distributed systems with proven business impact. Designing high-concurrency event-driven microservices.
+
+CASE STUDIES & KEY DELIVERABLES
+
+Case Study 1: Resolving Thread Pool Exhaustion
+During Zoho load testing, high API traffic caused request timeouts. Vamsi analyzed thread dumps and discovered thread starvation while threads were waiting on downstream I/O. He diagnosed the bottleneck and introduced request batching (aggregating calls within a short time window), which stabilized the pool, significantly reduced thread blocking, and restored request latency to its baseline.
+
+Case Study 2: Event-Driven Kafka Fan-Out
+Built event-driven timelines using Kafka to fan out post events to follower timelines asynchronously. Supported ~10,000 simulated concurrent users, demonstrating robust performance under high concurrency and load.
+
+Case Study 3: Redis Caching Strategy
+Designed a hybrid write-through and cache-aside Redis caching strategy with asynchronous Kafka-based cache rehydration. This minimized feed read latency and proactively prevented cache stampedes under high concurrency.
+
+Case Study 4: Database Partitioning & Graph Traversals
+Modeled relational database tables in MySQL using range partitioning on high-volume tables to preserve query performance at scale. Applied ArangoDB graph modeling for relationship traversals to optimize follower relationship queries.
+
+Case Study 5: Graph Database Evaluation
+Led an evaluation comparing ArangoDB and Neo4j for graph-heavy relationship workloads. Structured recommendations based on benchmarked traversal performance and scalability, helpingZoho engineers pick their production architecture.
+
+Case Study 6: Multi-Organ Detection in Laparoscopic Videos (Diffusion + Detection Models)
+Conducted deep learning/computer vision research. Trained segmentation and detection pipelines using U-Net and YOLOv11 on the CholecSeg8k dataset to detect critical organs, achieving a high 0.995 mAP50. Preprocessed and annotated 8,000+ frames, transforming semantic masks into polygon labels. Leveraged Elucidated Imagen diffusion models to generate synthetic surgical frames to improve lighting/anatomical generalization. Built cross-validation, data augmentations, and model monitoring in PyTorch, optimizing inference times for real-time surgical usage.
+
+Case Study 7: Etsy-Style Multi-Vendor Marketplace (With ML-ready Backend)
+Designed a data engineering and ML-compatible backend foundation. Built a multi-vendor marketplace using Medusa.js and PostgreSQL to collect structured product and user behavior data for future personalization features (recommendations, search ranking, and vector embeddings). Built event-driven pipelines, clean relational schemas for ML training, and automated CI/CD deployments via Docker and GitHub Actions.

@@ -24,6 +24,17 @@ dist/
 # Databases
 *.db
 *.sqlite3
+*.lance/
+data/persona_db.lance/
 
 # OS files
 .DS_Store
+
+# Frontend & dependencies
+node_modules/
+remotion/node_modules/
+.remotion/
+
+# Generated media
+data/media/
+data/audio/

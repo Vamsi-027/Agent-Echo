@@ -1,5 +1,61 @@
-I am Vamsi Cheruku, a senior distributed systems engineer with 8 years of experience.
+Vamsi Cheruku
+vamsicheruku18@gmail.com | 314-358-6905 | Saint Louis, MO | linkedin.com/in/vamsicheruku | vamsicheruku.com
 
-I built a real-time event pipeline at EchoCorp that scaled to 500k events per second using Kafka and Rust.
+PROFILE
+Systems Architect & Performance Engineer specializing in high-performance, scalable distributed systems. Backend Software Engineer with 3+ years of experience designing, developing, and testing microservices, event-driven pipelines, and cloud-deployed applications using Java, Spring Boot, Kafka, and Redis. Currently pursuing an MS in Artificial Intelligence at Saint Louis University, with a strong focus on distributed systems, ML infrastructure, and MLOps.
 
-I designed a consensus algorithm for a private blockchain network at BlockLabs using Go.
+SKILLS
+Languages: Java (17+), TypeScript, JavaScript, Python, SQL
+Backend Frameworks: Spring Boot, Express.js, REST APIs, Microservices, Node.js, Apache Struts
+Testing & Quality: JUnit 5, Mockito, Integration Testing, Code Coverage, structured logging, error classification
+Databases: MySQL (range partitioning), PostgreSQL (transaction isolation, optimistic locking), Redis (cache-aside, write-through, stampede prevention), ArangoDB (graph traversals), DynamoDB
+Messaging & EDA: Apache Kafka (idempotent producers, custom partitioning, asynchronous fan-out)
+Cloud & DevOps: AWS (EC2, S3, EKS), Docker, Kubernetes, GitHub Actions CI/CD
+API Design: RESTful APIs, OpenAPI/Swagger specifications, JSON, XML contracts
+Developer Tools: Git, GitHub Copilot, AI pair-programming, Agile/Scrum, Camunda BPMN, Jenkins
+
+EXPERIENCE
+
+Zoho Corporation | Software Developer (07/2022 - 07/2024) | Chennai, India
+Core backend engineer on a greenfield distributed social communication platform built for ~20,000 employees using Java, Spring Boot, and Kafka.
+- Designed and maintained Java/Spring Boot microservices for a high-concurrency feed platform, applying reliability-first principles (structured logging, meaningful error propagation, metrics-driven dashboards) which improved system observability and reduced production incidents.
+- Built event-driven pipelines using Kafka to fan out post events to follower timelines asynchronously, supporting ~10,000 simulated concurrent users while maintaining system stability under load.
+- Owned Redis caching subsystem with a hybrid write-through/cache-aside strategy and async cache rehydration via Kafka, reducing feed read latency and preventing cache stampede under high concurrency.
+- Designed and documented RESTful APIs using OpenAPI/Swagger specifications for feed, user profile, and notification services, establishing clear API contracts consumed by multiple downstream clients (including Angular frontends).
+- Modeled relational data in MySQL using range partitioning on high-volume post/event tables to maintain query performance at scale; applied ArangoDB graph modeling for follower relationship traversals.
+- Refined Elasticsearch index mappings (stemming, stopword filtering, keyword indexing) using Python scripts to automate reindexing and benchmarking, improving relevance and low-latency delivery of search results.
+- Authored unit and integration tests using JUnit and Mockito for feed pipeline and caching components in the GitHub Actions CI/CD pipeline, enforcing code coverage standards and catching regressions early.
+- Diagnosed and resolved thread pool exhaustion during load testing by introducing request batching and optimizing background job scheduling algorithms, proactively resolving critical blocking/starvation issues before they hit production.
+
+Zoho Corporation | Project Intern (02/2022 - 07/2022) | Chennai, India
+- Evaluated ArangoDB vs Neo4j for graph-heavy relationship workloads within Camunda BPMN workflows, delivering a structured recommendation based on benchmarked traversal performance that informed the production architecture.
+- Built REST API endpoints within a Java Spring Boot microservices codebase.
+- Integrated Redis cache-aside layers for user metadata, reducing database reads and improving response times.
+
+PROJECTS
+
+Multi-Organ Detection in Laparoscopic Videos (Diffusion + Detection Models)
+- Trained segmentation & detection computer vision pipelines using U-Net and YOLOv11 on the CholecSeg8k dataset, achieving 0.995 mAP50 for critical organ detection in PyTorch.
+- Preprocessed and annotated 8,000+ laparoscopic frames, converting semantic masks into polygon-based YOLO labels.
+- Generated synthetic surgical frames using Elucidated Imagen diffusion models, improving model generalization to lighting and anatomical variations.
+- Implemented augmentation, cross-validation, and model monitoring in PyTorch; optimized inference for real-time surgical scenarios.
+
+Etsy-Style Multi-Vendor Marketplace (With ML-ready Backend)
+- Built a multi-vendor e-commerce platform using Medusa.js + PostgreSQL, enabling future ML personalization features (recommendations, ranking, embeddings).
+- Integrated event-driven pipelines and structured product/user data for model-ready ingestion.
+- Designed inventory, search, and order workflows with clean data schemas suitable for ML training.
+- Automated deployments via GitHub Actions + Docker.
+
+TaraHub – Multi-Vendor Marketplace
+- Built Java 17/Spring Boot backend services for a multi-vendor commerce platform with RESTful API contracts documented via OpenAPI/Swagger.
+- Implemented an event-driven order lifecycle pipeline using Kafka with idempotent producers and custom partitioning to propagate state transitions reliably across services without polling.
+- Containerized services with Docker and deployed across AWS EC2 instances in multiple availability zones for fault tolerance, using GitHub Actions CI/CD to automate build, test, and deployment.
+
+SaamCars – Vehicle Dealership Platform
+- Designed a full-stack RESTful backend with Node.js and PostgreSQL for vehicle inventory and booking workflows, implementing role-based access control (RBAC).
+- Built concurrency-safe reservation logic leveraging PostgreSQL transaction isolation and optimistic locking to prevent double-bookings under simultaneous load.
+- Integrated Stripe webhooks with signature verification to synchronize payment events with booking state transitions atomically.
+
+EDUCATION
+Saint Louis University | MS in Artificial Intelligence (GPA: 3.74/4.00) (08/2024 - 05/2026) | Saint Louis, MO, USA
+Coursework in machine learning, deep learning, and AI ethics.

@@ -200,6 +200,7 @@ def edit_draft(draft_id: int, instruction: str) -> dict:
             "type": "object",
             "properties": {
                 "text": {"type": "string", "description": "The revised LinkedIn post body text"},
+                "twitter_text": {"type": "string", "description": "The revised Twitter/X post body text (under 280 characters)"},
                 "hashtags": {
                     "type": "array",
                     "items": {"type": "string"},
@@ -226,7 +227,7 @@ def edit_draft(draft_id: int, instruction: str) -> dict:
                     "description": "Duration of the poll"
                 }
             },
-            "required": ["text", "hashtags", "poll_question", "poll_options", "poll_duration"],
+            "required": ["text", "twitter_text", "hashtags", "poll_question", "poll_options", "poll_duration"],
             "additionalProperties": False
         }
     else:
@@ -234,27 +235,29 @@ def edit_draft(draft_id: int, instruction: str) -> dict:
             "type": "object",
             "properties": {
                 "text": {"type": "string", "description": "The revised LinkedIn post body text"},
+                "twitter_text": {"type": "string", "description": "The revised Twitter/X post body text (under 280 characters)"},
                 "hashtags": {
                     "type": "array",
                     "items": {"type": "string"},
                     "description": "List of hashtags"
                 }
             },
-            "required": ["text", "hashtags"],
+            "required": ["text", "twitter_text", "hashtags"],
             "additionalProperties": False
         }
     
     system_prompt = (
-        f"You are a professional editor revising a draft post to match the author's voice profile.\n\n"
+        f"You are a professional editor revising a draft post to match the author's voice profile on LinkedIn and Twitter/X.\n\n"
         f"Voice Profile Guidelines:\n{voice_profile_text}\n\n"
         f"Selected Pillar: {original['pillar']}\n"
         f"Format Type: {original['format_type']}"
     )
     
     user_prompt = (
-        f"Original Draft:\n{original['text_content']}\n\n"
+        f"Original LinkedIn Draft:\n{original['text_content']}\n"
+        f"Original Twitter Draft:\n{original['twitter_text_content'] or ''}\n\n"
         f"Revision Request: {instruction}\n\n"
-        "Please rewrite the post incorporating the revision request, while maintaining the character count limit (<1300 chars)."
+        "Please rewrite both posts incorporating the revision request, maintaining the LinkedIn character limit (<1300 chars) and the Twitter limit (snappy, under 280 chars)."
     )
     
     response = client.messages.create(
@@ -267,6 +270,7 @@ def edit_draft(draft_id: int, instruction: str) -> dict:
     
     response_data = json.loads(response.content[0].text)
     revised_text = response_data["text"]
+    revised_twitter_text = response_data["twitter_text"]
     hashtags_list = response_data["hashtags"]
     hashtags_str = " ".join([f"#{h.strip().replace('#', '')}" for h in hashtags_list])
     
@@ -288,9 +292,9 @@ def edit_draft(draft_id: int, instruction: str) -> dict:
     
     # Create new draft row
     cursor.execute(
-        "INSERT INTO drafts (digest_id, pillar, format_type, text_content, media_refs_json, hashtags, voice_profile_hash, status) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, 'pending_review')",
-        (original["digest_id"], original["pillar"], original["format_type"], revised_text, media_refs_json, hashtags_str, voice_profile_hash)
+        "INSERT INTO drafts (digest_id, pillar, format_type, text_content, twitter_text_content, media_refs_json, hashtags, voice_profile_hash, status) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending_review')",
+        (original["digest_id"], original["pillar"], original["format_type"], revised_text, revised_twitter_text, media_refs_json, hashtags_str, voice_profile_hash)
     )
     new_draft_id = cursor.lastrowid
     
@@ -301,3 +305,58 @@ def edit_draft(draft_id: int, instruction: str) -> dict:
     
     conn.close()
     return new_draft_row
+
+def generate_topic_draft(
+    topic: str,
+    activity_events: list[dict],
+    persona_chunks: list[str],
+    recent_posts: list[str],
+    voice_profile: str,
+) -> tuple[str, str]:
+    """
+    Asks Claude to write a LinkedIn post about the given topic, grounded in the person's
+    experience, style vault, and recent engineering context.
+    """
+    client = Anthropic()
+
+    schema = {
+        "type": "object",
+        "properties": {
+            "text": {"type": "string"},
+            "hashtags": {"type": "string"},
+        },
+        "required": ["text", "hashtags"],
+        "additionalProperties": False,
+    }
+
+    system = (
+        f"{voice_profile}\n\n"
+        "Write a LinkedIn post about the given topic, grounded in this person's "
+        "real experience, voice, and recent work. "
+        "1300-2500 characters. No corporate buzzwords. "
+        "End with a genuine question only if it fits naturally.\n\n"
+        f"Persona context:\n" + "\n".join(persona_chunks) + "\n\n"
+        f"Recent posts (do not repeat these themes):\n"
+        + "\n---\n".join(recent_posts)
+    )
+
+    recent_activity_summary = "\n".join(
+        f"- [{e['source']}] {e['title']}"
+        for e in activity_events[:10]
+    )
+
+    user_content = (
+        f"Topic: {topic}\n\n"
+        f"Recent activity (last 24h, for grounding only — "
+        f"use if relevant, ignore if not):\n{recent_activity_summary}"
+    )
+
+    response = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=1500,
+        output_config={"format": {"type": "json_schema", "schema": schema}},
+        system=system,
+        messages=[{"role": "user", "content": user_content}]
+    )
+    result = json.loads(response.content[0].text)
+    return result["text"], result["hashtags"]

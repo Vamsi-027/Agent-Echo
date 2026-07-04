@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS drafts (
     pillar TEXT,
     format_type TEXT,                      -- 'text' | 'image' | 'carousel' | 'video' | 'long_form'
     text_content TEXT,
+    twitter_text_content TEXT,
     media_refs_json TEXT,                  -- JSON array of file paths
     hashtags TEXT,                         -- Comma or space separated hashtags
     voice_profile_hash TEXT,
@@ -37,6 +38,10 @@ CREATE TABLE IF NOT EXISTS drafts (
     review_notes TEXT,
     scheduled_time TEXT,                   -- UTC ISO8601 calculated from cadence rules
     publishing_started_at TEXT,
+    visual_composition TEXT,
+    music_profile TEXT,
+    cut_type TEXT,
+    scene_graph_json TEXT,                 -- JSON: render blocks + shots for the generated video (see media_handler._build_scene_graph)
     created_at TEXT DEFAULT (datetime('now')),
     updated_at TEXT DEFAULT (datetime('now'))
 );
@@ -56,7 +61,8 @@ CREATE TABLE IF NOT EXISTS content_queue (
 CREATE TABLE IF NOT EXISTS published_posts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     draft_id INTEGER REFERENCES drafts(id) ON DELETE SET NULL,
-    linkedin_post_urn TEXT UNIQUE NOT NULL,
+    linkedin_post_urn TEXT UNIQUE,
+    twitter_tweet_id TEXT UNIQUE,
     published_at TEXT DEFAULT (datetime('now'))
 );
 
@@ -76,8 +82,38 @@ CREATE TABLE IF NOT EXISTS performance_log (
     reactions INTEGER DEFAULT 0,
     comments INTEGER DEFAULT 0,
     reposts INTEGER DEFAULT 0,
+    visual_composition TEXT,
+    music_profile TEXT,
+    cut_type TEXT,
     recorded_at TEXT DEFAULT (datetime('now'))
 );
+
+-- Trigger to auto-populate metadata in performance_log from draft details
+CREATE TRIGGER IF NOT EXISTS populate_performance_metadata
+AFTER INSERT ON performance_log
+FOR EACH ROW
+BEGIN
+    UPDATE performance_log
+    SET visual_composition = (
+        SELECT d.visual_composition
+        FROM published_posts p
+        JOIN drafts d ON p.draft_id = d.id
+        WHERE p.linkedin_post_urn = NEW.linkedin_post_urn
+    ),
+    music_profile = (
+        SELECT d.music_profile
+        FROM published_posts p
+        JOIN drafts d ON p.draft_id = d.id
+        WHERE p.linkedin_post_urn = NEW.linkedin_post_urn
+    ),
+    cut_type = (
+        SELECT d.cut_type
+        FROM published_posts p
+        JOIN drafts d ON p.draft_id = d.id
+        WHERE p.linkedin_post_urn = NEW.linkedin_post_urn
+    )
+    WHERE id = NEW.id;
+END;
 
 -- Pipeline runs tracking
 CREATE TABLE IF NOT EXISTS pipeline_runs (

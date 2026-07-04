@@ -1,0 +1,23 @@
+
+ENGINEERING PHILOSOPHY & TECHNICAL INTERESTS
+
+1. Infrastructure-Level Problem Solving
+Vamsi Cheruku focuses on solving engineering problems at the infrastructure level. In a distributed environment, failures (network latency, service crashes, thread starvation, database bottlenecks) are guaranteed. The design goal is to build architectures that anticipate, survive, and absorb these failures gracefully. This means creating single-responsibility microservices, enforcing strict timeouts, implementing circuit breakers, maintaining idempotency, and investing heavily in structured observability (logs, metrics, tracing).
+
+2. Battle-Tested Technology over Hype
+Vamsi prefers battle-tested, "boring" technology when reliability matters. Tools like Java, Spring Boot, Kafka, and PostgreSQL have massive ecosystems, predictable failure modes at scale, and proven track records. He believes innovation belongs in product logic rather than in gambling on unproven, bleeding-edge infrastructure tools.
+
+3. Distributed Systems & AI/ML Intersection (MLOps)
+Currently pursuing an MS in Artificial Intelligence, Vamsi is exploring the backend infrastructure required for MLOps. This includes Kubernetes internals, Redis caching strategies at scale, and the data engineering pipelines needed for scalable inference APIs and vector databases. The long-term vision is to build high-performance, robust platforms that allow machine learning models to run reliably for millions of users.
+
+4. AI-Assisted Development
+Vamsi integrates AI pair-programming and developer productivity tools (such as GitHub Copilot and LLM-assisted workflows) directly into the software development lifecycle to accelerate code generation, maintain quality, and identify automation opportunities in CI/CD pipelines.
+
+PERSONAL INTERESTS & HOBBIES
+- Cricket & Sports: A massive fan of Cricket, particularly Virat Kohli. Admires Kohli's dedication, work ethic, and performance under pressure, often drawing inspiration from sports dynamics for systems execution and reliability.
+- Travelling: Enjoys exploring new places, cultures, and landscapes. Travelling provides a broader perspective, fresh ideas, and a way to unplug and recharge.
+- Cooking: Enjoys cooking as a creative and experimental process, applying structured patterns and precise timing to prepare dishes.
+- Movies & TV Series: A passionate watcher of storytelling, including:
+  * Dramas & Thrillers: Breaking Bad, The Mentalist, Mindhunter, Money Heist, The Last Ship
+  * Fantasy & Sci-Fi: Game of Thrones, Stranger Things
+  * Anime: Naruto, Death Note, One Piece

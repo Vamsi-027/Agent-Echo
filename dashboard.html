@@ -1238,6 +1238,64 @@
             await loadChatSessions();
         }
 
+        async function handleFileSelect(event) {
+            const files = Array.from(event.target.files);
+            event.target.value = '';
+            for (const file of files) {
+                await uploadFile(file);
+            }
+        }
+
+        async function uploadFile(file) {
+            const chipId = `chip-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+            addAttachmentChip(chipId, file.name, true);
+            const formData = new FormData();
+            formData.append('file', file);
+            try {
+                const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                if (!res.ok) throw new Error(await res.text());
+                const metadata = await res.json();
+                pendingAttachments.push(metadata);
+                updateChip(chipId, file.name, metadata.type);
+            } catch (e) {
+                updateChipError(chipId, file.name);
+                console.error('Upload failed:', e);
+            }
+        }
+
+        function addAttachmentChip(chipId, filename, isUploading) {
+            const chips = document.getElementById('chat-attachment-chips');
+            const chip = document.createElement('div');
+            chip.id = chipId;
+            chip.className = `attachment-chip${isUploading ? ' uploading' : ''}`;
+            chip.innerHTML = `⏳ ${escapeHtml(filename)}`;
+            chips.appendChild(chip);
+        }
+
+        function updateChip(chipId, filename, fileType) {
+            const icons = { pdf: '📄', image: '🖼️', video: '🎥' };
+            const chip = document.getElementById(chipId);
+            if (!chip) return;
+            chip.className = 'attachment-chip';
+            chip.innerHTML = `${icons[fileType] || '📎'} ${escapeHtml(filename)}
+                <button class="attachment-chip-remove"
+                    onclick="removeAttachmentChip('${chipId}', ${JSON.stringify(filename)})">×</button>`;
+        }
+
+        function updateChipError(chipId, filename) {
+            const chip = document.getElementById(chipId);
+            if (!chip) return;
+            chip.style.cssText = 'background:var(--danger-light);border-color:var(--danger);color:var(--danger)';
+            chip.innerHTML = `❌ ${escapeHtml(filename)}
+                <button class="attachment-chip-remove" onclick="this.parentElement.remove()">×</button>`;
+        }
+
+        function removeAttachmentChip(chipId, filename) {
+            const chip = document.getElementById(chipId);
+            if (chip) chip.remove();
+            pendingAttachments = pendingAttachments.filter(a => a.filename !== filename);
+        }
+
         // Charts singletons
         let eventsChartInstance = null;
         let performanceChartInstance = null;
@@ -1717,7 +1775,11 @@
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: cmd })
+                    body: JSON.stringify({
+                        message: cmd,
+                        session_id: activeChatSessionId,
+                        attachments: [],
+                    }),
                 });
                 removeMessage(typingId);
                 if (response.ok) {
@@ -1757,32 +1819,56 @@
         async function sendChatMessage() {
             const input = document.getElementById('chat-input');
             const text = input.value.trim();
-            if (!text) return;
-
+            if (!text && pendingAttachments.length === 0) return;
             input.value = '';
-            
-            // Append User Bubble
-            appendMessage('user', text);
 
-            // Append Typing Indicator
+            // Auto-create session if none active
+            if (!activeChatSessionId) {
+                const res = await fetch('/api/chats', { method: 'POST' });
+                const session = await res.json();
+                activeChatSessionId = session.id;
+                document.getElementById('chat-session-title').textContent = 'New conversation';
+                await loadChatSessions();
+            }
+
+            const attachmentsCopy = [...pendingAttachments];
+            pendingAttachments = [];
+            document.getElementById('chat-attachment-chips').innerHTML = '';
+
+            // Build attachment display HTML for user bubble
+            let attHtml = '';
+            if (attachmentsCopy.length) {
+                const icons = { pdf: '📄', image: '🖼️', video: '🎥' };
+                attHtml = `<div class="chat-attachment-display">${attachmentsCopy.map(a =>
+                    `<span class="attachment-chip-display">${icons[a.type] || '📎'} ${escapeHtml(a.filename)}</span>`
+                ).join('')}</div>`;
+            }
+
+            appendMessageWithAttachments('user', text || '(attachment)', attHtml);
             const typingId = appendMessage('agent', '⚡ <i>Agent Echo is thinking...</i>');
 
             try {
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: text })
+                    body: JSON.stringify({
+                        message: text,
+                        session_id: activeChatSessionId,
+                        attachments: attachmentsCopy,
+                    }),
                 });
-                
-                // Remove Typing Indicator
                 removeMessage(typingId);
-
                 if (response.ok) {
                     const data = await response.json();
-                    appendMessage('agent', data.response || "No response received.");
+                    if (data.session_id && data.session_id !== activeChatSessionId) {
+                        activeChatSessionId = data.session_id;
+                    }
+                    appendMessage('agent', data.response || 'No response received.');
+                    await loadChatSessions(); // refresh sidebar title
+                    fetchSystemData();
                 } else {
                     const data = await response.json();
-                    appendMessage('agent', `❌ Error: ${data.error || "Failed to process message."}`);
+                    appendMessage('agent', `❌ Error: ${data.error || 'Failed to process message.'}`);
                 }
             } catch (err) {
                 removeMessage(typingId);
@@ -1813,6 +1899,21 @@
             container.appendChild(div);
             
             // Scroll to bottom of messages
+            container.scrollTop = container.scrollHeight;
+            return msgId;
+        }
+
+        function appendMessageWithAttachments(sender, text, attachmentHtml) {
+            const container = document.getElementById('chat-messages');
+            const msgId = `chat-msg-${++messageIdCounter}`;
+            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const div = document.createElement('div');
+            div.id = msgId;
+            div.className = `chat-bubble-container ${sender}`;
+            div.innerHTML = `<div>${escapeHtml(text)}</div>
+                ${attachmentHtml}
+                <div class="chat-bubble-meta ${sender}">${timeStr}</div>`;
+            container.appendChild(div);
             container.scrollTop = container.scrollHeight;
             return msgId;
         }

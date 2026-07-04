@@ -1104,20 +1104,28 @@
                 list.innerHTML = '<div style="font-size:0.78rem;color:var(--text-muted);padding:8px 10px;">No conversations yet</div>';
                 return;
             }
-            list.innerHTML = sessions.map(s => {
-                const title = s.title || 'New conversation';
-                const truncated = title.length > 28 ? title.slice(0, 28) + '…' : title;
-                const isActive = s.id === activeChatSessionId;
-                return `<div class="session-item ${isActive ? 'active' : ''}" id="session-item-${s.id}"
-                    onclick="switchSession(${s.id}, ${JSON.stringify(title)})">
+            list.innerHTML = '';
+            sessions.forEach(s => {
+                const titleForDisplay = (s.title || 'New conversation').substring(0, 28);
+                const titleEscaped = escapeHtml(s.title || 'New conversation');
+                const item = document.createElement('div');
+                item.className = `session-item${s.id === activeChatSessionId ? ' active' : ''}`;
+                item.id = `session-item-${s.id}`;
+                item.dataset.sessionId = s.id;
+                item.dataset.sessionTitle = s.title || 'New conversation';
+                item.innerHTML = `
                   <div class="session-item-body">
-                    <div class="session-item-title">${escapeHtml(truncated)}</div>
+                    <div class="session-item-title">${escapeHtml(titleForDisplay)}${(s.title||'').length > 28 ? '…' : ''}</div>
                     <div class="session-item-time">${relativeTime(s.updated_at)}</div>
                   </div>
                   <button class="session-delete-btn"
-                    onclick="event.stopPropagation();confirmDeleteSession(${s.id})" title="Delete">×</button>
-                </div>`;
-            }).join('');
+                    onclick="event.stopPropagation(); confirmDeleteSession(${s.id})" title="Delete">×</button>
+                `;
+                item.addEventListener('click', function() {
+                    switchSession(this.dataset.sessionId, this.dataset.sessionTitle);
+                });
+                list.appendChild(item);
+            });
         }
 
         function relativeTime(isoStr) {
@@ -1279,7 +1287,11 @@
             chip.className = 'attachment-chip';
             chip.innerHTML = `${icons[fileType] || '📎'} ${escapeHtml(filename)}
                 <button class="attachment-chip-remove"
-                    onclick="removeAttachmentChip('${chipId}', ${JSON.stringify(filename)})">×</button>`;
+                    data-chip-id="${escapeHtml(chipId)}"
+                    data-filename="${escapeHtml(filename)}">×</button>`;
+            chip.querySelector('.attachment-chip-remove').addEventListener('click', function() {
+                removeAttachmentChip(this.dataset.chipId, this.dataset.filename);
+            });
         }
 
         function updateChipError(chipId, filename) {

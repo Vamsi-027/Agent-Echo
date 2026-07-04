@@ -468,6 +468,16 @@ async def process_chat_message(
     if pdf_contexts:
         message = "\n\n---\n\n".join(pdf_contexts) + "\n\n---\n\n" + message
 
+    # Warn user if any PDF failed extraction
+    failed_pdfs = [
+        a["filename"] for a in attachments
+        if a.get("type") == "pdf" and not a.get("extracted_text")
+    ]
+    if failed_pdfs:
+        # Prepend warning to message so Claude and the user see it
+        warning = "Could not extract text from PDF — try describing its contents instead."
+        message = warning + "\n\n" + message
+
     response = await _process_intent(message, session_id, attached_media_paths)
 
     if session_id is not None:
@@ -633,7 +643,11 @@ def parse_multipart_upload(content_type: str, body: bytes) -> tuple:
         if b"\r\n\r\n" not in part:
             continue
         headers_raw, _, file_data = part.partition(b"\r\n\r\n")
-        file_data = file_data.rstrip(b"\r\n")
+        # Strip the single trailing CRLF that multipart adds — do NOT use rstrip (corrupts binary)
+        if file_data.endswith(b"\r\n"):
+            file_data = file_data[:-2]
+        elif file_data.endswith(b"\n"):
+            file_data = file_data[:-1]
         headers_str = headers_raw.decode("utf-8", errors="replace")
 
         if 'name="file"' not in headers_str:

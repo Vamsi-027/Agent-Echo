@@ -713,47 +713,57 @@ class DashboardRequestHandler(http.server.BaseHTTPRequestHandler):
             self.send_error(404, "Not Found")
 
     def _handle_list_sessions(self):
+        conn = get_db_connection()
         try:
-            conn = get_db_connection()
             sessions = get_chat_sessions(conn)
-            conn.close()
             self.send_json_response(200, sessions)
         except Exception as e:
-            logger.error(f"Error listing sessions: {e}", exc_info=True)
+            logger.error("Error listing sessions: %s", e, exc_info=True)
             self.send_json_error(500, str(e))
+        finally:
+            conn.close()
 
     def _handle_create_session(self):
+        conn = get_db_connection()
         try:
-            conn = get_db_connection()
             session = create_chat_session(conn)
-            conn.close()
-            self.send_json_response(200, session)
+            self.send_json_response(201, session)
         except Exception as e:
-            logger.error(f"Error creating session: {e}", exc_info=True)
+            logger.error("Error creating session: %s", e, exc_info=True)
             self.send_json_error(500, str(e))
+        finally:
+            conn.close()
 
     def _handle_delete_session(self, session_id: int):
+        conn = get_db_connection()
         try:
-            conn = get_db_connection()
             deleted = delete_chat_session(conn, session_id)
-            conn.close()
             if deleted:
                 self.send_json_response(200, {"deleted": True})
             else:
                 self.send_json_error(404, f"Session {session_id} not found")
         except Exception as e:
-            logger.error(f"Error deleting session {session_id}: {e}", exc_info=True)
+            logger.error("Error deleting session %s: %s", session_id, e, exc_info=True)
             self.send_json_error(500, str(e))
+        finally:
+            conn.close()
 
     def _handle_get_messages(self, session_id: int):
+        conn = get_db_connection()
         try:
-            conn = get_db_connection()
+            row = conn.execute(
+                "SELECT id FROM chat_sessions WHERE id = ?", (session_id,)
+            ).fetchone()
+            if row is None:
+                self.send_json_error(404, "Session not found")
+                return
             messages = get_session_messages(conn, session_id)
-            conn.close()
             self.send_json_response(200, messages)
         except Exception as e:
-            logger.error(f"Error fetching messages for {session_id}: {e}", exc_info=True)
+            logger.error("Error getting messages: %s", e, exc_info=True)
             self.send_json_error(500, str(e))
+        finally:
+            conn.close()
 
     def _handle_file_upload(self):
         content_type = self.headers.get("Content-Type", "")

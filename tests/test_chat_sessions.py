@@ -1,6 +1,8 @@
+import asyncio
 import os
 import pytest
 from pathlib import Path
+from unittest.mock import patch, MagicMock
 from db.db import get_db_connection, init_db
 from dashboard_server import (
     get_chat_sessions,
@@ -236,3 +238,63 @@ def test_handle_uploaded_file_pdf_saves_and_includes_extracted_text(tmp_path, mo
     assert "extracted_text" in result
     assert isinstance(result["extracted_text"], str)
     assert Path(result["saved_path"]).exists()
+
+
+def _make_mock_client(text="Hello from agent"):
+    mock_response = MagicMock()
+    mock_response.content = [MagicMock(text=text)]
+    mock_client = MagicMock()
+    mock_client.messages.create.return_value = mock_response
+    return mock_client
+
+
+def test_process_chat_message_saves_user_and_agent_messages(test_db):
+    conn = get_db_connection()
+    session = create_chat_session(conn)
+    conn.close()
+
+    from dashboard_server import process_chat_message
+
+    with patch("dashboard_server.Anthropic", return_value=_make_mock_client()):
+        asyncio.run(process_chat_message("hello", session["id"], []))
+
+    conn = get_db_connection()
+    msgs = get_session_messages(conn, session["id"])
+    conn.close()
+    assert len(msgs) == 2
+    assert msgs[0]["role"] == "user"
+    assert msgs[0]["content"] == "hello"
+    assert msgs[1]["role"] == "agent"
+    assert msgs[1]["content"] == "Hello from agent"
+
+
+def test_process_chat_message_pdf_context_prepended(test_db):
+    conn = get_db_connection()
+    session = create_chat_session(conn)
+    conn.close()
+
+    attachments = [{
+        "type": "pdf",
+        "filename": "paper.pdf",
+        "saved_path": "data/uploads/x.pdf",
+        "extracted_text": "This paper is about RAG systems.",
+    }]
+
+    captured = []
+
+    def capture_create(**kwargs):
+        captured.extend(kwargs.get("messages", []))
+        r = MagicMock()
+        r.content = [MagicMock(text="Sure")]
+        return r
+
+    mock_client = MagicMock()
+    mock_client.messages.create.side_effect = capture_create
+
+    from dashboard_server import process_chat_message
+
+    with patch("dashboard_server.Anthropic", return_value=mock_client):
+        asyncio.run(process_chat_message("write a post", session["id"], attachments))
+
+    all_content = " ".join(str(m) for m in captured)
+    assert "This paper is about RAG systems." in all_content

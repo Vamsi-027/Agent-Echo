@@ -12,6 +12,7 @@ from db.db import get_db_connection
 # Apply Anthropic -> OpenAI fallback patch
 import anthropic_fallback
 anthropic_fallback.apply_patch()
+from anthropic import Anthropic
 
 # Configure logging
 logging.basicConfig(
@@ -21,24 +22,32 @@ logging.basicConfig(
 logger = logging.getLogger("dashboard_server")
 
 
-async def process_chat_message(message: str) -> str:
-    from notification.telegram_bot import (
-        fallback_intent_parse,
-        call_structured_intent,
-        parse_relative_datetime_with_llm,
-        get_most_recent_pending_draft_id
-    )
+async def _process_intent(message: str, session_id=None, attached_media_paths=None) -> str:
+    try:
+        from notification.telegram_bot import (
+            fallback_intent_parse,
+            call_structured_intent,
+            parse_relative_datetime_with_llm,
+            get_most_recent_pending_draft_id,
+        )
+    except ImportError:
+        def fallback_intent_parse(text):
+            return None
+        async def call_structured_intent(text):
+            return {"intent": "unknown"}
+        async def parse_relative_datetime_with_llm(text):
+            return None
+        def get_most_recent_pending_draft_id():
+            return None
     from aggregator.daily_digest import run_daily_digest
     from generator.draft_generator import generate_drafts_for_date, generate_topic_draft, approve_draft
     from generator.conceptual_image_selector import extract_image_details
     from generator.media_handler import generate_topic_conceptual_image, generate_remotion_video
-    from anthropic import Anthropic
-    import json
-    import os
     import datetime
     import threading
     from config_loader import LOCAL_TZ
 
+    attached_media_paths = attached_media_paths or []
     text = message.strip()
     parsed = fallback_intent_parse(text)
     if not parsed:
@@ -67,6 +76,7 @@ async def process_chat_message(message: str) -> str:
     elif intent == "draft_from_topic":
         topic = parsed.get("topic", text)
         fmt = parsed.get("format_type", "text")
+        user_media_override = json.dumps(attached_media_paths) if attached_media_paths else None
         try:
             today_str = datetime.datetime.now(LOCAL_TZ).strftime("%Y-%m-%d")
             drow = conn.execute("SELECT id FROM daily_digests ORDER BY id DESC LIMIT 1").fetchone()
@@ -128,9 +138,12 @@ async def process_chat_message(message: str) -> str:
                 media_refs_json = res.content[0].text
                 
             elif fmt == "image":
-                details = extract_image_details(draft_text)
-                img_path = generate_topic_conceptual_image(details)
-                media_refs_json = json.dumps([img_path])
+                if user_media_override:
+                    media_refs_json = user_media_override
+                else:
+                    details = extract_image_details(draft_text)
+                    img_path = generate_topic_conceptual_image(details)
+                    media_refs_json = json.dumps([img_path])
                 
             elif fmt == "video":
                 c = conn.cursor()
@@ -156,8 +169,17 @@ async def process_chat_message(message: str) -> str:
                     output_path = f"{output_dir}/topic_{draft_id}_animation.mp4"
                     generate_remotion_video(f"topic_{draft_id}", mock_digest, output_path, draft_text, draft_id)
                 
-                threading.Thread(target=run_remotion, daemon=True).start()
-                
+                if user_media_override:
+                    uo_conn = get_db_connection()
+                    uo_conn.execute(
+                        "UPDATE drafts SET media_refs_json = ? WHERE id = ?",
+                        (user_media_override, draft_id),
+                    )
+                    uo_conn.commit()
+                    uo_conn.close()
+                else:
+                    threading.Thread(target=run_remotion, daemon=True).start()
+
                 review_card = f"""
 <div class="chat-card-review">
     <div class="chat-card-title">Draft #{draft_id} Generated (Video)</div>
@@ -263,11 +285,26 @@ async def process_chat_message(message: str) -> str:
 
     elif intent == "system_question":
         question = parsed.get("question", text)
+        prior_turns = []
+        if session_id:
+            ctx_conn = get_db_connection()
+            history = ctx_conn.execute(
+                "SELECT role, content FROM chat_messages "
+                "WHERE session_id = ? ORDER BY created_at DESC LIMIT 6",
+                (session_id,),
+            ).fetchall()
+            ctx_conn.close()
+            prior_turns = [
+                {"role": r["role"], "content": r["content"]}
+                for r in reversed(history)
+            ]
         client = Anthropic()
         res = client.messages.create(
             model="claude-sonnet-4-6",
             max_tokens=300,
-            messages=[{"role": "user", "content": f"You are Agent Echo, an autonomous content assistant. Answer this query cleanly and concisely:\n\n{question}"}]
+            messages=prior_turns + [
+                {"role": "user", "content": f"You are Agent Echo, an autonomous content assistant. Answer this query cleanly and concisely:\n\n{question}"}
+            ],
         )
         conn.close()
         return res.content[0].text
@@ -361,14 +398,67 @@ async def process_chat_message(message: str) -> str:
             return f"Failed to edit draft #{draft_id}: {e}"
 
     else:
+        prior_turns = []
+        if session_id:
+            ctx_conn = get_db_connection()
+            history = ctx_conn.execute(
+                "SELECT role, content FROM chat_messages "
+                "WHERE session_id = ? ORDER BY created_at DESC LIMIT 6",
+                (session_id,),
+            ).fetchall()
+            ctx_conn.close()
+            prior_turns = [
+                {"role": r["role"], "content": r["content"]}
+                for r in reversed(history)
+            ]
         client = Anthropic()
         res = client.messages.create(
             model="claude-sonnet-4-6",
             max_tokens=300,
-            messages=[{"role": "user", "content": f"You are Agent Echo, an autonomous developer LinkedIn agent. Converse politely and answer this message: '{text}'"}]
+            messages=prior_turns + [
+                {"role": "user", "content": f"You are Agent Echo, an autonomous developer LinkedIn agent. Converse politely and answer this message: '{text}'"}
+            ],
         )
         conn.close()
         return res.content[0].text
+
+
+async def process_chat_message(
+    message: str,
+    session_id: int = None,
+    attachments: list = None,
+) -> str:
+    attachments = attachments or []
+    _original_message = message
+
+    # Collect image/video paths for use when generating drafts
+    attached_media_paths = [
+        a["saved_path"]
+        for a in attachments
+        if a.get("type") in ("image", "video")
+    ]
+
+    # Prepend PDF extracted text so Claude reads the document
+    pdf_contexts = [
+        f'[Attached PDF: {a["filename"]}]\n\n{a["extracted_text"]}'
+        for a in attachments
+        if a.get("type") == "pdf" and a.get("extracted_text")
+    ]
+    if pdf_contexts:
+        message = "\n\n---\n\n".join(pdf_contexts) + "\n\n---\n\n" + message
+
+    response = await _process_intent(message, session_id, attached_media_paths)
+
+    if session_id is not None:
+        conn = get_db_connection()
+        save_chat_message(
+            conn, session_id, "user", _original_message,
+            json.dumps(attachments) if attachments else None,
+        )
+        save_chat_message(conn, session_id, "agent", response)
+        conn.close()
+
+    return response
 
 
 # ─── Chat Session Helpers ─────────────────────────────────────────────────────
@@ -560,11 +650,23 @@ class DashboardRequestHandler(http.server.BaseHTTPRequestHandler):
             try:
                 payload = json.loads(post_data.decode("utf-8"))
                 message = payload.get("message", "")
-                
+                session_id = payload.get("session_id")
+                attachments = payload.get("attachments", [])
+
+                # Auto-create session if none provided
+                if not session_id:
+                    sc = get_db_connection()
+                    session_id = create_chat_session(sc)["id"]
+                    sc.close()
+
                 import asyncio
-                response_text = asyncio.run(process_chat_message(message))
-                
-                self.send_json_response(200, {"response": response_text})
+                response_text = asyncio.run(
+                    process_chat_message(message, session_id, attachments)
+                )
+
+                self.send_json_response(
+                    200, {"response": response_text, "session_id": session_id}
+                )
             except Exception as e:
                 logger.error(f"Error handling /api/chat POST: {e}", exc_info=True)
                 self.send_json_error(500, f"Error processing message: {e}")

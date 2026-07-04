@@ -660,12 +660,22 @@ class DashboardRequestHandler(http.server.BaseHTTPRequestHandler):
             self.serve_html()
         elif path == "/api/data":
             self.serve_api_data()
+        elif path == "/api/chats":
+            self._handle_list_sessions()
         else:
-            self.send_error(404, "File Not Found")
+            m = re.match(r"^/api/chats/(\d+)/messages$", path)
+            if m:
+                self._handle_get_messages(int(m.group(1)))
+            else:
+                self.send_error(404, "File Not Found")
 
     def do_POST(self):
         path = self.path.split("?")[0]
-        if path == "/api/chat":
+        if path == "/api/chats":
+            self._handle_create_session()
+        elif path == "/api/upload":
+            self._handle_file_upload()
+        elif path == "/api/chat":
             content_length = int(self.headers.get("Content-Length", 0))
             post_data = self.rfile.read(content_length)
             try:
@@ -693,6 +703,72 @@ class DashboardRequestHandler(http.server.BaseHTTPRequestHandler):
                 self.send_json_error(500, f"Error processing message: {e}")
         else:
             self.send_error(404, "Not Found")
+
+    def do_DELETE(self):
+        path = self.path.split("?")[0]
+        m = re.match(r"^/api/chats/(\d+)$", path)
+        if m:
+            self._handle_delete_session(int(m.group(1)))
+        else:
+            self.send_error(404, "Not Found")
+
+    def _handle_list_sessions(self):
+        try:
+            conn = get_db_connection()
+            sessions = get_chat_sessions(conn)
+            conn.close()
+            self.send_json_response(200, sessions)
+        except Exception as e:
+            logger.error(f"Error listing sessions: {e}", exc_info=True)
+            self.send_json_error(500, str(e))
+
+    def _handle_create_session(self):
+        try:
+            conn = get_db_connection()
+            session = create_chat_session(conn)
+            conn.close()
+            self.send_json_response(200, session)
+        except Exception as e:
+            logger.error(f"Error creating session: {e}", exc_info=True)
+            self.send_json_error(500, str(e))
+
+    def _handle_delete_session(self, session_id: int):
+        try:
+            conn = get_db_connection()
+            deleted = delete_chat_session(conn, session_id)
+            conn.close()
+            if deleted:
+                self.send_json_response(200, {"deleted": True})
+            else:
+                self.send_json_error(404, f"Session {session_id} not found")
+        except Exception as e:
+            logger.error(f"Error deleting session {session_id}: {e}", exc_info=True)
+            self.send_json_error(500, str(e))
+
+    def _handle_get_messages(self, session_id: int):
+        try:
+            conn = get_db_connection()
+            messages = get_session_messages(conn, session_id)
+            conn.close()
+            self.send_json_response(200, messages)
+        except Exception as e:
+            logger.error(f"Error fetching messages for {session_id}: {e}", exc_info=True)
+            self.send_json_error(500, str(e))
+
+    def _handle_file_upload(self):
+        content_type = self.headers.get("Content-Type", "")
+        content_length = int(self.headers.get("Content-Length", 0))
+        try:
+            body = self.rfile.read(content_length)
+            filename, file_data = parse_multipart_upload(content_type, body)
+            if filename is None:
+                self.send_json_error(400, "No 'file' field found in multipart upload")
+                return
+            metadata = handle_uploaded_file(filename, file_data)
+            self.send_json_response(200, metadata)
+        except Exception as e:
+            logger.error(f"File upload error: {e}", exc_info=True)
+            self.send_json_error(500, str(e))
 
     def serve_html(self):
         html_path = Path(__file__).parent / "dashboard.html"

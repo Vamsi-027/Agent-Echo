@@ -436,65 +436,85 @@ def save_chat_message(conn, session_id, role, content, attachments_json=None):
 
 # ─── File Upload Helpers ──────────────────────────────────────────────────────
 
-def extract_pdf_text(pdf_path: str) -> str:
-    """Extract plain text from a PDF. Returns empty string on any failure."""
+def extract_pdf_text(file_bytes: bytes) -> str:
+    """Extract plain text from PDF bytes. Returns empty string on any failure."""
+    import io
     try:
         import pdfplumber
-        with pdfplumber.open(pdf_path) as pdf:
-            return "\n".join(page.extract_text() or "" for page in pdf.pages)
+        with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
+            text = "\n".join(page.extract_text() or "" for page in pdf.pages)
+            return text[:12000]
     except Exception:
         pass
     try:
         import pypdf
-        with open(pdf_path, "rb") as f:
-            reader = pypdf.PdfReader(f)
-            return "\n".join(page.extract_text() or "" for page in reader.pages)
+        reader = pypdf.PdfReader(io.BytesIO(file_bytes))
+        text = "\n".join(page.extract_text() or "" for page in reader.pages)
+        return text[:12000]
     except Exception:
         return ""
 
 
-def handle_uploaded_file(filename: str, file_data: bytes, mime_type: str) -> dict:
+def handle_uploaded_file(filename: str, file_bytes: bytes) -> dict:
     """Save an uploaded file to disk and return attachment metadata."""
     import uuid as _uuid
     ext = Path(filename).suffix.lower()
     unique_name = f"{_uuid.uuid4().hex}{ext}"
 
-    if mime_type == "application/pdf" or ext == ".pdf":
+    if ext == ".pdf":
         save_dir = Path("data/uploads")
         save_dir.mkdir(parents=True, exist_ok=True)
         save_path = save_dir / unique_name
-        save_path.write_bytes(file_data)
-        extracted = extract_pdf_text(str(save_path))
+        save_path.write_bytes(file_bytes)
+        extracted = extract_pdf_text(file_bytes)
         return {
             "type": "pdf",
             "filename": filename,
             "saved_path": str(save_path),
-            "extracted_text": extracted[:12000],
+            "extracted_text": extracted,
         }
-    else:
+    elif ext in {".png", ".jpg", ".jpeg", ".gif"}:
         save_dir = Path("data/media/uploads")
         save_dir.mkdir(parents=True, exist_ok=True)
         save_path = save_dir / unique_name
-        save_path.write_bytes(file_data)
-        file_type = "video" if ext in {".mp4", ".mov", ".webm"} else "image"
+        save_path.write_bytes(file_bytes)
         return {
-            "type": file_type,
+            "type": "image",
+            "filename": filename,
+            "saved_path": str(save_path),
+        }
+    elif ext in {".mp4", ".mov", ".webm"}:
+        save_dir = Path("data/media/uploads")
+        save_dir.mkdir(parents=True, exist_ok=True)
+        save_path = save_dir / unique_name
+        save_path.write_bytes(file_bytes)
+        return {
+            "type": "video",
+            "filename": filename,
+            "saved_path": str(save_path),
+        }
+    else:
+        save_dir = Path("data/uploads")
+        save_dir.mkdir(parents=True, exist_ok=True)
+        save_path = save_dir / unique_name
+        save_path.write_bytes(file_bytes)
+        return {
+            "type": "unknown",
             "filename": filename,
             "saved_path": str(save_path),
         }
 
 
-def parse_multipart_upload(rfile, content_type: str, content_length: int):
+def parse_multipart_upload(content_type: str, body: bytes) -> tuple:
     """
-    Parse multipart/form-data. Returns (filename, file_data, mime_type) for
-    the 'file' field, or (None, None, None) if parsing fails.
+    Parse multipart/form-data. Returns (filename, file_bytes) for the 'file'
+    field, or (None, None) if parsing fails.
     """
-    boundary_match = re.search(r"boundary=(.+)", content_type)
+    boundary_match = re.search(r"boundary=([^\s;]+)", content_type)
     if not boundary_match:
-        return None, None, None
+        return None, None
 
     boundary = boundary_match.group(1).strip().encode()
-    body = rfile.read(content_length)
 
     for part in body.split(b"--" + boundary)[1:]:
         if part.startswith(b"--"):
@@ -511,11 +531,9 @@ def parse_multipart_upload(rfile, content_type: str, content_length: int):
         if not fn_match:
             continue
         filename = fn_match.group(1)
-        ct_match = re.search(r"Content-Type:\s*(.+)", headers_str, re.IGNORECASE)
-        mime_type = ct_match.group(1).strip() if ct_match else "application/octet-stream"
-        return filename, file_data, mime_type
+        return filename, file_data
 
-    return None, None, None
+    return None, None
 
 
 class DashboardRequestHandler(http.server.BaseHTTPRequestHandler):
@@ -703,6 +721,8 @@ class DashboardRequestHandler(http.server.BaseHTTPRequestHandler):
 
 def run_server(host="localhost", port=8080):
     server_address = (host, port)
+    Path("data/uploads").mkdir(parents=True, exist_ok=True)
+    Path("data/media/uploads").mkdir(parents=True, exist_ok=True)
     # Using ThreadingHTTPServer for concurrent, non-blocking requests if page is polling
     # In older python versions ThreadingHTTPServer may not exist, fallback to HTTPServer
     try:

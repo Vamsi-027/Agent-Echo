@@ -263,7 +263,7 @@
         /* Content area scrollbar */
         .content-area::-webkit-scrollbar       { width: 5px; }
         .content-area::-webkit-scrollbar-track { background: transparent; }
-        .content-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
+        .content-area::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 3px; }
 
         /* === Animation Keyframes === */
         @keyframes fadeInUp {
@@ -449,10 +449,10 @@
             box-shadow: var(--shadow-md);
         }
 
-        .analytics-stat-chip.accent-orange  { border-left: 4px solid var(--primary); }
-        .analytics-stat-chip.accent-amber   { border-left: 4px solid var(--amber); }
-        .analytics-stat-chip.accent-green   { border-left: 4px solid var(--emerald); }
-        .analytics-stat-chip.accent-neutral { border-left: 4px solid var(--text-muted); }
+        .analytics-stat-chip.accent-orange  { border-left: 4px solid #1967d2; }
+        .analytics-stat-chip.accent-amber   { border-left: 4px solid #ea8600; }
+        .analytics-stat-chip.accent-green   { border-left: 4px solid #137333; }
+        .analytics-stat-chip.accent-neutral { border-left: 4px solid #80868b; }
 
         .stat-label {
             font-size: 0.72rem;
@@ -547,8 +547,8 @@
         }
 
         .filter-select option {
-            background: #080810;
-            color: rgba(255,255,255,0.90);
+            background: #ffffff;
+            color: #202124;
         }
 
         /* Timeline Items */
@@ -591,11 +591,11 @@
             text-transform: uppercase;
         }
 
-        .timeline-source.git      { background: rgba(99, 102, 241, 0.18); color: #a5b4fc; }
-        .timeline-source.note     { background: rgba(168, 85, 247, 0.18); color: #d8b4fe; }
-        .timeline-source.browser  { background: rgba(249, 115, 22, 0.18);  color: #fdba74; }
-        .timeline-source.file     { background: rgba(16, 185, 129, 0.18);  color: #6ee7b7; }
-        .timeline-source.calendar { background: rgba(239, 68, 68, 0.18);   color: #fca5a5; }
+        .timeline-source.git      { background: rgba(25,103,210,0.10);  color: #1967d2; }
+        .timeline-source.note     { background: rgba(123,87,200,0.10);  color: #7b57c8; }
+        .timeline-source.browser  { background: rgba(234,134,0,0.10);   color: #ea8600; }
+        .timeline-source.file     { background: rgba(19,115,51,0.10);   color: #137333; }
+        .timeline-source.calendar { background: rgba(197,34,31,0.10);   color: #c5221f; }
 
         .timeline-time {
             font-size: 0.75rem;
@@ -611,7 +611,7 @@
         }
 
         .event-details-formatted {
-            background: rgba(255,255,255,0.04);
+            background: rgba(0,0,0,0.04);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 12px;
@@ -631,7 +631,7 @@
         .event-code {
             font-family: var(--font-mono);
             font-size: 0.75rem;
-            background: rgba(255,255,255,0.06);
+            background: rgba(0,0,0,0.06);
             padding: 2px 6px;
             border-radius: 4px;
             color: var(--text-primary);
@@ -685,10 +685,10 @@
             letter-spacing: 0.03em;
         }
 
-        .status-badge.pending_review { background: var(--warning-light); color: #fbbf24; }
-        .status-badge.approved       { background: var(--success-light);  color: #34d399; }
-        .status-badge.published      { background: var(--primary-light);  color: #a5b4fc; }
-        .status-badge.rejected       { background: var(--danger-light);   color: #f87171; }
+        .status-badge.pending_review { background: rgba(234,134,0,0.10);   color: #ea8600; }
+        .status-badge.approved       { background: rgba(19,115,51,0.10);   color: #137333; }
+        .status-badge.published      { background: rgba(25,103,210,0.10);  color: #1967d2; }
+        .status-badge.rejected       { background: rgba(197,34,31,0.10);   color: #c5221f; }
 
         .draft-metadata-row {
             display: flex;
@@ -699,7 +699,7 @@
         .draft-meta-chip {
             font-size: 0.72rem;
             font-weight: 600;
-            background: rgba(255,255,255,0.04);
+            background: rgba(0,0,0,0.04);
             padding: 3px 8px;
             border-radius: 6px;
             border: 1px solid var(--border-color);
@@ -710,7 +710,7 @@
             font-size: 0.82rem;
             color: var(--text-primary);
             line-height: 1.5;
-            background: rgba(255,255,255,0.04);
+            background: rgba(0,0,0,0.04);
             padding: 14px;
             border-radius: var(--radius-btn);
             max-height: 150px;
@@ -730,7 +730,7 @@
 
         .draft-media-box {
             font-size: 0.78rem;
-            background: rgba(255,255,255,0.04);
+            background: rgba(0,0,0,0.04);
             border: 1px dashed var(--border-color);
             padding: 10px 12px;
             border-radius: var(--radius-btn);
@@ -820,7 +820,7 @@
         .chat-sidebar {
             width: 220px;
             flex-shrink: 0;
-            background: rgba(255,255,255,0.04);
+            background: rgba(0,0,0,0.04);
             border-right: 1px solid var(--glass-border);
             display: flex;
             flex-direction: column;
@@ -858,7 +858,7 @@
             gap: 4px;
         }
         .chat-session-list::-webkit-scrollbar { width: 4px; }
-        .chat-session-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+        .chat-session-list::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 2px; }
 
         .session-item {
             display: flex;
@@ -873,11 +873,11 @@
             position: relative;
         }
         .session-item:hover {
-            background: rgba(255,255,255,0.06);
+            background: #f1f3f4;
         }
         .session-item.active {
-            background: rgba(255,255,255,0.10);
-            border-color: var(--glass-border);
+            background: rgba(25, 103, 210, 0.08);
+            border-color: rgba(25, 103, 210, 0.20);
             box-shadow: var(--shadow-sm);
         }
         .session-item.active::before {
@@ -941,7 +941,7 @@
             font-weight: 700;
         }
         .confirm-yes { background: var(--danger-light); color: var(--danger); border-color: rgba(239, 68, 68, 0.2) !important; }
-        .confirm-no { background: rgba(255,255,255,0.06); color: var(--text-secondary); }
+        .confirm-no { background: #f1f3f4; color: var(--text-secondary); }
 
         /* Chat Main Panel */
         .chat-main-panel {
@@ -973,7 +973,7 @@
             gap: 20px;
         }
         .chat-messages::-webkit-scrollbar { width: 5px; }
-        .chat-messages::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.15); border-radius: 2px; }
+        .chat-messages::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.15); border-radius: 2px; }
 
         .chat-bubble-container {
             display: flex;
@@ -991,11 +991,11 @@
             color: #ffffff;
             border-radius: 12px 12px 2px 12px;
             padding: 10px 16px;
-            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
+            box-shadow: 0 2px 8px rgba(25, 103, 210, 0.15);
         }
         .chat-bubble-container.agent {
             align-self: flex-start;
-            background: rgba(255,255,255,0.06);
+            background: rgba(0,0,0,0.06);
             color: var(--text-primary);
             border-radius: 12px 12px 12px 2px;
             padding: 12px 18px;
@@ -1021,14 +1021,14 @@
             font-family: var(--font-mono);
             font-weight: 500;
         }
-        .chat-bubble-meta.user { text-align: right; color: #e0e7ff; }
+        .chat-bubble-meta.user { text-align: right; color: rgba(255,255,255,0.80); }
         .chat-bubble-meta.agent { text-align: left; color: var(--text-secondary); }
 
         .chat-attachment-display { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
         .attachment-chip-display {
             font-size: 0.72rem;
             padding: 4px 10px;
-            background: #ffffff;
+            background: #f8f9fa;
             border: 1px solid var(--border-color);
             border-radius: 6px;
             color: var(--text-secondary);
@@ -1165,7 +1165,7 @@
             font-size: 0.82rem;
             color: var(--text-primary);
             line-height: 1.5;
-            background: #f8fafc;
+            background: #f8f9fa;
             padding: 12px 14px;
             border-radius: var(--radius-btn);
             border: 1px solid var(--border-color);
@@ -1182,7 +1182,7 @@
         }
 
         .chat-card-badge {
-            background: #f1f5f9;
+            background: #f1f3f4;
             padding: 2px 8px;
             border-radius: var(--radius-pill);
             border: 1px solid var(--border-color);
@@ -1212,7 +1212,7 @@
         .chat-action-btn:hover {
             color: var(--text-primary);
             border-color: var(--border-hover);
-            background: #f8fafc;
+            background: #f1f3f4;
         }
 
         .chat-action-btn.approve-btn {
@@ -1363,7 +1363,7 @@
 
         .modal-close-btn:hover {
             color: var(--text-primary);
-            background: #f1f5f9;
+            background: #f1f3f4;
         }
 
         .modal-form-group {
@@ -1389,7 +1389,7 @@
             font-family: inherit;
             font-size: 0.85rem;
             color: var(--text-primary);
-            background: #f8fafc;
+            background: #f8f9fa;
             transition: all var(--transition-speed);
             box-sizing: border-box;
         }
@@ -2269,13 +2269,13 @@
 
                     if (['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(suffix)) {
                         return `
-                            <div class="draft-media-preview-container" style="margin-top: 10px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); background: #f8fafc; display: flex; justify-content: center; align-items: center; padding: 6px;">
+                            <div class="draft-media-preview-container" style="margin-top: 10px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); background: #f8f9fa; display: flex; justify-content: center; align-items: center; padding: 6px;">
                                 <img src="${url}" style="max-width: 100%; max-height: 240px; object-fit: contain; border-radius: 6px;" alt="Draft Image Asset" onerror="this.parentElement.innerHTML='⚠️ Failed to load image: ${filename}'">
                             </div>
                         `;
                     } else if (['mp4', 'webm', 'ogg'].includes(suffix)) {
                         return `
-                            <div class="draft-media-preview-container" style="margin-top: 10px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); background: #f8fafc; padding: 4px;">
+                            <div class="draft-media-preview-container" style="margin-top: 10px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); background: #f8f9fa; padding: 4px;">
                                 <video src="${url}" controls style="width: 100%; max-height: 240px; border-radius: 4px; display: block;"></video>
                             </div>
                         `;
@@ -2671,22 +2671,22 @@
                     maintainAspectRatio: false,
                     scales: {
                         y: {
-                            grid: { color: 'rgba(255,255,255,0.06)' },
-                            ticks: { color: 'rgba(255,255,255,0.50)', font: { family: 'Inter' } }
+                            grid: { color: 'rgba(0,0,0,0.06)' },
+                            ticks: { color: 'rgba(0,0,0,0.50)', font: { family: 'Inter' } }
                         },
                         x: {
                             grid: { display: false },
-                            ticks: { color: 'rgba(255,255,255,0.50)', font: { family: 'Inter' } }
+                            ticks: { color: 'rgba(0,0,0,0.50)', font: { family: 'Inter' } }
                         }
                     },
                     plugins: {
                         legend: { display: false },
                         tooltip: {
-                            backgroundColor: 'rgba(15,15,25,0.92)',
-                            borderColor:     'rgba(255,255,255,0.10)',
+                            backgroundColor: '#f8f9fa',
+                            borderColor:     'rgba(0,0,0,0.10)',
                             borderWidth:     1,
-                            titleColor:      'rgba(255,255,255,0.95)',
-                            bodyColor:       'rgba(255,255,255,0.65)',
+                            titleColor:      'rgba(0,0,0,0.95)',
+                            bodyColor:       'rgba(0,0,0,0.65)',
                             padding:         10,
                             cornerRadius:    6,
                             titleFont:       { family: 'Inter' },
@@ -2806,12 +2806,12 @@
                     interaction: { mode: 'index', intersect: false },
                     scales: {
                         y: {
-                            grid: { color: 'rgba(255,255,255,0.06)' },
-                            ticks: { color: 'rgba(255,255,255,0.50)', font: { family: 'Inter', size: 11 } }
+                            grid: { color: 'rgba(0,0,0,0.06)' },
+                            ticks: { color: 'rgba(0,0,0,0.50)', font: { family: 'Inter', size: 11 } }
                         },
                         x: {
                             grid: { display: false },
-                            ticks: { color: 'rgba(255,255,255,0.50)', font: { family: 'Inter', size: 11 } }
+                            ticks: { color: 'rgba(0,0,0,0.50)', font: { family: 'Inter', size: 11 } }
                         }
                     },
                     plugins: {
@@ -2821,15 +2821,15 @@
                                 boxWidth: 10,
                                 padding: 16,
                                 font: { family: 'Inter', size: 11 },
-                                color: 'rgba(255,255,255,0.60)'
+                                color: 'rgba(0,0,0,0.60)'
                             }
                         },
                         tooltip: {
-                            backgroundColor: 'rgba(15,15,25,0.92)',
-                            borderColor:     'rgba(255,255,255,0.10)',
+                            backgroundColor: '#f8f9fa',
+                            borderColor:     'rgba(0,0,0,0.10)',
                             borderWidth:     1,
-                            titleColor:      'rgba(255,255,255,0.95)',
-                            bodyColor:       'rgba(255,255,255,0.65)',
+                            titleColor:      'rgba(0,0,0,0.95)',
+                            bodyColor:       'rgba(0,0,0,0.65)',
                             padding:         10,
                             cornerRadius:    6,
                             titleFont:       { family: 'Inter' },

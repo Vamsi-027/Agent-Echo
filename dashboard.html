@@ -7,48 +7,93 @@
     <!-- Custom Google Fonts (Plus Jakarta Sans & Inter) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <!-- Chart.js for minimalist charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     <style>
         :root {
-            /* Premium Sophisticated Slate-Indigo Palette */
-            --bg-base: #f8fafc;
-            --bg-card: #ffffff;
-            --sidebar-bg: #f1f5f9;
-            --border-color: #e2e8f0;
-            --border-hover: #cbd5e1;
-            
-            --primary: #6366f1; /* Indigo */
+            /* === Dark Glassmorphism Design Tokens === */
+
+            /* Background */
+            --bg-base: #080810;
+            --bg-orb-1: rgba(99, 102, 241, 0.18);
+            --bg-orb-2: rgba(139, 92, 246, 0.14);
+            --bg-orb-3: rgba(14, 165, 233, 0.10);
+
+            /* Glass surfaces */
+            --glass-1: rgba(255, 255, 255, 0.04);
+            --glass-2: rgba(255, 255, 255, 0.06);
+            --glass-3: rgba(255, 255, 255, 0.10);
+            --glass-4: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-border-strong: rgba(255, 255, 255, 0.14);
+            --blur-sm: blur(10px) saturate(180%);
+            --blur-md: blur(20px) saturate(180%);
+            --blur-lg: blur(40px) saturate(200%);
+
+            /* Accent palette */
+            --primary: #6366f1;
             --primary-hover: #4f46e5;
-            --primary-light: rgba(99, 102, 241, 0.06);
-            --primary-glow: rgba(99, 102, 241, 0.15);
-            
-            --success: #10b981; /* Emerald */
+            --primary-light: rgba(99, 102, 241, 0.15);
+            --primary-glow: 0 0 24px rgba(99, 102, 241, 0.35);
+            --violet: #8b5cf6;
+            --sky: #0ea5e9;
+            --emerald: #10b981;
+            --success: #10b981;
+            --amber: #f59e0b;
+            --warning: #f59e0b;
+            --rose: #f43f5e;
+            --danger: #f43f5e;
+
+            /* Text */
+            --text-primary: rgba(255, 255, 255, 0.95);
+            --text-secondary: rgba(255, 255, 255, 0.60);
+            --text-muted: rgba(255, 255, 255, 0.35);
+
+            /* Typography */
+            --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+            --font-body: 'Inter', -apple-system, sans-serif;
+            --font-mono: 'SF Mono', 'JetBrains Mono', Menlo, 'Courier New', monospace;
+
+            /* Shape */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --radius-full: 9999px;
+            --sidebar-width: 220px;
+
+            /* Motion */
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-base: 220ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 360ms cubic-bezier(0.4, 0, 0.2, 1);
+
+            /* Shadows */
+            --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+            --shadow-glass-hover: 0 12px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.10);
+            --shadow-glow-primary: 0 0 24px rgba(99, 102, 241, 0.35);
+            --shadow-glow-emerald: 0 0 20px rgba(16, 185, 129, 0.30);
+
+            /* === Backward-compat aliases (keep existing panel CSS working) === */
+            --bg-card: var(--glass-2);
+            --sidebar-bg: var(--glass-1);
+            --border-color: var(--glass-border);
+            --border-hover: var(--glass-border-strong);
+            --radius-card: var(--radius-md);
+            --radius-btn: var(--radius-sm);
+            --radius-pill: var(--radius-full);
+            --font-main: var(--font-body);
+            --transition-speed: var(--transition-base);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+            --shadow-lg: var(--shadow-glass);
+            --shadow-glow: var(--shadow-glow-primary);
             --success-hover: #059669;
-            --success-light: rgba(16, 185, 129, 0.06);
-            
-            --warning: #f59e0b; /* Amber */
-            --warning-light: rgba(245, 158, 11, 0.06);
-            
-            --danger: #ef4444; /* Red */
-            --danger-light: rgba(239, 68, 68, 0.06);
-            
-            --text-primary: #0f172a; /* Slate 900 */
-            --text-secondary: #475569; /* Slate 600 */
-            --text-muted: #94a3b8; /* Slate 400 */
-            
-            --font-main: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
-            --font-mono: 'SFMono-Regular', Consolas, Menlo, monospace;
-            --transition-speed: 0.2s;
-            --radius-card: 12px;
-            --radius-btn: 8px;
-            --radius-pill: 9999px;
-            
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
-            --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.08);
+            --success-light: rgba(16, 185, 129, 0.12);
+            --warning-light: rgba(245, 158, 11, 0.12);
+            --danger-light: rgba(239, 68, 68, 0.12);
+            --primary-glow: var(--shadow-glow-primary);
         }
 
         * {
@@ -66,106 +111,6 @@
             flex-direction: column;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 32px;
-            background: #ffffff;
-            border-bottom: 1px solid var(--border-color);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
-        }
-
-        .logo-section {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .logo-indicator {
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, var(--primary), #818cf8);
-            color: #ffffff;
-            font-size: 0.95rem;
-            border-radius: 8px;
-            font-weight: 700;
-            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
-        }
-
-        .logo-title {
-            font-weight: 700;
-            font-size: 1.1rem;
-            color: var(--text-primary);
-            letter-spacing: -0.4px;
-        }
-
-        .header-nav {
-            display: flex;
-            gap: 4px;
-            background: #f1f5f9;
-            padding: 4px;
-            border-radius: var(--radius-pill);
-            border: 1px solid #e2e8f0;
-        }
-
-        .nav-btn {
-            background: transparent;
-            border: none;
-            border-radius: var(--radius-pill);
-            color: var(--text-secondary);
-            font-weight: 600;
-            font-size: 0.82rem;
-            padding: 6px 16px;
-            cursor: pointer;
-            transition: all var(--transition-speed);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .nav-btn:hover {
-            color: var(--text-primary);
-            background: rgba(255, 255, 255, 0.5);
-        }
-
-        .nav-btn.active {
-            background: #ffffff;
-            color: var(--primary);
-            font-weight: 700;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .system-status {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--success);
-            background: var(--success-light);
-            padding: 4px 12px;
-            border-radius: var(--radius-pill);
-            border: 1px solid rgba(16, 185, 129, 0.15);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .main-container {
-            flex: 1;
-            padding: 40px 32px;
-            display: flex;
-            flex-direction: column;
-            gap: 32px;
-            max-width: 1200px;
-            margin: 0 auto;
-            width: 100%;
         }
 
         /* HUD Stats Row - Clean Modern Grid */
@@ -1248,17 +1193,6 @@
             to { transform: translateY(0) scale(1); opacity: 1; }
         }
 
-        footer {
-            text-align: center;
-            padding: 24px;
-            border-top: 1px solid var(--border-color);
-            font-size: 0.78rem;
-            color: var(--text-muted);
-            background: #ffffff;
-            margin-top: auto;
-            font-weight: 500;
-            letter-spacing: 0.2px;
-        }
     </style>
 </head>
 <body>

@@ -2661,8 +2661,10 @@
                     datasets: [{
                         label: 'Events Count',
                         data: data,
-                        backgroundColor: '#d96b43',
-                        hoverBackgroundColor: '#c85a32',
+                        backgroundColor: 'rgba(25,103,210,0.15)',
+                        hoverBackgroundColor: 'rgba(25,103,210,0.25)',
+                        borderColor: '#1967d2',
+                        borderWidth: 1,
                         borderRadius: 4
                     }]
                 },
@@ -2671,22 +2673,22 @@
                     maintainAspectRatio: false,
                     scales: {
                         y: {
-                            grid: { color: 'rgba(0,0,0,0.06)' },
-                            ticks: { color: 'rgba(0,0,0,0.50)', font: { family: 'Inter' } }
+                            grid: { color: 'rgba(0,0,0,0.08)' },
+                            ticks: { color: '#5f6368', font: { family: 'Inter' } }
                         },
                         x: {
                             grid: { display: false },
-                            ticks: { color: 'rgba(0,0,0,0.50)', font: { family: 'Inter' } }
+                            ticks: { color: '#5f6368', font: { family: 'Inter' } }
                         }
                     },
                     plugins: {
                         legend: { display: false },
                         tooltip: {
-                            backgroundColor: '#f8f9fa',
-                            borderColor:     'rgba(0,0,0,0.10)',
+                            backgroundColor: 'rgba(255,255,255,0.97)',
+                            borderColor:     '#e8eaed',
                             borderWidth:     1,
-                            titleColor:      'rgba(0,0,0,0.95)',
-                            bodyColor:       'rgba(0,0,0,0.65)',
+                            titleColor:      '#202124',
+                            bodyColor:       '#5f6368',
                             padding:         10,
                             cornerRadius:    6,
                             titleFont:       { family: 'Inter' },
@@ -2762,12 +2764,13 @@
                         {
                             label: 'Impressions',
                             data: impressions,
-                            borderColor: '#d96b43',
-                            backgroundColor: makeGradient(217, 107, 67),
+                            borderColor: '#1967d2',
+                            backgroundColor: makeGradient(25, 103, 210),
                             tension: 0.4,
                             borderWidth: 2,
                             pointRadius: 3,
                             pointHoverRadius: 6,
+                            pointBackgroundColor: '#1967d2',
                             pointBorderColor: '#ffffff',
                             pointBorderWidth: 2,
                             fill: true
@@ -2775,12 +2778,13 @@
                         {
                             label: 'Reactions',
                             data: reactions,
-                            borderColor: '#b45309',
-                            backgroundColor: makeGradient(180, 83, 9),
+                            borderColor: '#ea8600',
+                            backgroundColor: makeGradient(234, 134, 0),
                             tension: 0.4,
                             borderWidth: 2,
                             pointRadius: 3,
                             pointHoverRadius: 6,
+                            pointBackgroundColor: '#ea8600',
                             pointBorderColor: '#ffffff',
                             pointBorderWidth: 2,
                             fill: true
@@ -2788,12 +2792,13 @@
                         {
                             label: 'Comments',
                             data: comments,
-                            borderColor: '#15803d',
-                            backgroundColor: makeGradient(21, 128, 61),
+                            borderColor: '#137333',
+                            backgroundColor: makeGradient(19, 115, 51),
                             tension: 0.4,
                             borderWidth: 2,
                             pointRadius: 3,
                             pointHoverRadius: 6,
+                            pointBackgroundColor: '#137333',
                             pointBorderColor: '#ffffff',
                             pointBorderWidth: 2,
                             fill: true
@@ -2806,12 +2811,12 @@
                     interaction: { mode: 'index', intersect: false },
                     scales: {
                         y: {
-                            grid: { color: 'rgba(0,0,0,0.06)' },
-                            ticks: { color: 'rgba(0,0,0,0.50)', font: { family: 'Inter', size: 11 } }
+                            grid: { color: 'rgba(0,0,0,0.08)' },
+                            ticks: { color: '#5f6368', font: { family: 'Inter', size: 11 } }
                         },
                         x: {
                             grid: { display: false },
-                            ticks: { color: 'rgba(0,0,0,0.50)', font: { family: 'Inter', size: 11 } }
+                            ticks: { color: '#5f6368', font: { family: 'Inter', size: 11 } }
                         }
                     },
                     plugins: {
@@ -2821,15 +2826,15 @@
                                 boxWidth: 10,
                                 padding: 16,
                                 font: { family: 'Inter', size: 11 },
-                                color: 'rgba(0,0,0,0.60)'
+                                color: '#5f6368'
                             }
                         },
                         tooltip: {
-                            backgroundColor: '#f8f9fa',
-                            borderColor:     'rgba(0,0,0,0.10)',
+                            backgroundColor: 'rgba(255,255,255,0.97)',
+                            borderColor:     '#e8eaed',
                             borderWidth:     1,
-                            titleColor:      'rgba(0,0,0,0.95)',
-                            bodyColor:       'rgba(0,0,0,0.65)',
+                            titleColor:      '#202124',
+                            bodyColor:       '#5f6368',
                             padding:         10,
                             cornerRadius:    6,
                             titleFont:       { family: 'Inter' },

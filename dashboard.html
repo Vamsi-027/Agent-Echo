@@ -1453,29 +1453,6 @@
             font-weight: 500;
         }
 
-        .notion-toast {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-card);
-            padding: 12px 20px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
-            font-size: 0.82rem;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            z-index: 2000;
-            font-weight: 600;
-            animation: toastSlideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.25);
-        }
-
-        @keyframes toastSlideIn {
-            from { transform: translateY(20px) scale(0.95); opacity: 0; }
-            to { transform: translateY(0) scale(1); opacity: 1; }
-        }
 
     </style>
 </head>
@@ -1921,7 +1898,7 @@
                 </div>`;
             }
             await loadChatSessions();
-            showNotionToast("Conversation deleted successfully.", "success");
+            showToast("Conversation deleted successfully.", "success");
         }
 
         async function handleFileSelect(event) {
@@ -2000,27 +1977,24 @@
 
         // Switch panel tabs
         function switchTab(tabId, btnElement = null) {
-            // Update active nav buttons
-            document.querySelectorAll('.nav-btn').forEach(btn => {
+            document.querySelectorAll('.nav-item').forEach(btn => {
                 btn.classList.remove('active');
             });
             if (btnElement) {
                 btnElement.classList.add('active');
             } else {
-                document.querySelectorAll('.nav-btn').forEach(btn => {
-                    if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tabId)) {
+                document.querySelectorAll('.nav-item').forEach(btn => {
+                    if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(`'${tabId}'`)) {
                         btn.classList.add('active');
                     }
                 });
             }
 
-            // Update active panel display
             document.querySelectorAll('.tab-panel').forEach(panel => {
                 panel.classList.remove('active');
             });
             document.getElementById(`panel-${tabId}`).classList.add('active');
 
-            // Trigger chart rebuilds if relevant
             if (tabId === 'overview') {
                 setTimeout(buildOverviewChart, 100);
             } else if (tabId === 'analytics') {
@@ -2030,34 +2004,43 @@
             }
         }
 
-        function showNotionToast(message, type = 'info') {
-            const existing = document.getElementById('notion-active-toast');
-            if (existing) {
-                existing.remove();
+        const TOAST_ICONS = {
+            success: 'check-circle',
+            error:   'alert-circle',
+            warning: 'alert-triangle',
+            info:    'info',
+        };
+
+        function showToast(message, type = 'info', duration = 4000) {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            while (container.children.length >= 3) {
+                dismissToast(container.firstElementChild);
             }
 
             const toast = document.createElement('div');
-            toast.id = 'notion-active-toast';
-            toast.className = 'notion-toast';
-            
-            let emoji = 'ℹ️';
-            if (type === 'success') {
-                emoji = '✅';
-            } else if (type === 'error') {
-                emoji = '❌';
-            } else if (type === 'warning') {
-                emoji = '⚠️';
-            }
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <span class="toast-icon toast-${type}"><i data-lucide="${TOAST_ICONS[type] || 'info'}"></i></span>
+                <span class="toast-message">${message}</span>
+                <button class="toast-close" onclick="dismissToast(this.parentElement)" aria-label="Dismiss">
+                    <i data-lucide="x"></i>
+                </button>
+                <div class="toast-progress" style="animation: progressBar ${duration}ms linear forwards;"></div>
+            `;
 
-            toast.innerHTML = `<span>${emoji}</span> <span>${message}</span>`;
-            document.body.appendChild(toast);
+            container.appendChild(toast);
+            if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [toast] });
 
-            setTimeout(() => {
-                toast.style.animation = 'toastSlideIn 0.15s ease-out reverse';
-                setTimeout(() => {
-                    if (toast.parentNode) toast.remove();
-                }, 150);
-            }, 3000);
+            toast._dismissTimer = setTimeout(() => dismissToast(toast), duration);
+        }
+
+        function dismissToast(toast) {
+            if (!toast || !toast.isConnected) return;
+            clearTimeout(toast._dismissTimer);
+            toast.style.animation = 'slideOutToRight 250ms ease forwards';
+            setTimeout(() => toast.remove(), 250);
         }
 
         // Poll API Data
@@ -2085,26 +2068,23 @@
                 renderQueue();
                 
                 // Check active tab to reload charts
-                const activeNav = document.querySelector('.nav-btn.active');
+                const activeNav = document.querySelector('.nav-item.active');
                 if (activeNav) {
-                    const activeTabName = activeNav.innerText.toLowerCase();
-                    if (activeTabName.includes('overview')) {
-                        buildOverviewChart();
-                    } else if (activeTabName.includes('analytics')) {
-                        buildPerformanceChart();
-                    }
+                    const onclick = activeNav.getAttribute('onclick') || '';
+                    if (onclick.includes("'overview'")) buildOverviewChart();
+                    else if (onclick.includes("'analytics'")) buildPerformanceChart();
                 }
 
-                document.getElementById('system-status').innerText = "● CONNECTED";
-                document.getElementById('system-status').style.color = "var(--success)";
-                document.getElementById('system-status').style.background = "var(--success-light)";
-                document.getElementById('system-status').style.borderColor = "rgba(16, 185, 129, 0.1)";
+                const dot = document.querySelector('#system-status .status-dot');
+                const label = document.querySelector('#system-status .status-label');
+                if (dot) { dot.style.background = 'var(--emerald)'; dot.style.boxShadow = '0 0 6px var(--emerald)'; }
+                if (label) label.textContent = 'CONNECTED';
             } catch (err) {
                 console.error("Error synchronizing system data:", err);
-                document.getElementById('system-status').innerText = "▲ OFFLINE";
-                document.getElementById('system-status').style.color = "var(--danger)";
-                document.getElementById('system-status').style.background = "var(--danger-light)";
-                document.getElementById('system-status').style.borderColor = "rgba(239, 68, 68, 0.1)";
+                const dot = document.querySelector('#system-status .status-dot');
+                const label = document.querySelector('#system-status .status-label');
+                if (dot) { dot.style.background = 'var(--rose)'; dot.style.boxShadow = 'none'; }
+                if (label) label.textContent = 'OFFLINE';
             }
         }
 
@@ -2588,13 +2568,13 @@
                 if (response.ok && data && data.success) {
                     closeUnifiedEditModal();
                     await fetchSystemData();
-                    showNotionToast(data.message || "Post updated successfully!", "success");
+                    showToast(data.message || "Post updated successfully!", "success");
                 } else {
-                    showNotionToast('Error: ' + ((data && data.error) || 'Failed action'), "error");
+                    showToast('Error: ' + ((data && data.error) || 'Failed action'), "error");
                 }
             } catch (e) {
                 console.error(e);
-                showNotionToast('Network error processing post update.', "error");
+                showToast('Network error processing post update.', "error");
             }
         }
 
@@ -2609,12 +2589,12 @@
                 const data = await response.json();
                 if (response.ok && data.success) {
                     await fetchSystemData();
-                    showNotionToast("Draft approved and queued!", "success");
+                    showToast("Draft approved and queued!", "success");
                 } else {
-                    showNotionToast("Failed: " + (data.error || "Approval failed"), "error");
+                    showToast("Failed: " + (data.error || "Approval failed"), "error");
                 }
             } catch(e) {
-                showNotionToast("Network error approving draft.", "error");
+                showToast("Network error approving draft.", "error");
             }
         }
 
@@ -2629,12 +2609,12 @@
                 const data = await response.json();
                 if (response.ok && data.success) {
                     await fetchSystemData();
-                    showNotionToast("Draft deleted.", "success");
+                    showToast("Draft deleted.", "success");
                 } else {
-                    showNotionToast("Failed: " + (data.error || "Delete failed"), "error");
+                    showToast("Failed: " + (data.error || "Delete failed"), "error");
                 }
             } catch(e) {
-                showNotionToast("Network error deleting draft.", "error");
+                showToast("Network error deleting draft.", "error");
             }
         }
 
@@ -2653,13 +2633,13 @@
                 const data = await response.json();
                 if (response.ok && data.success) {
                     await fetchSystemData(); // Refresh UI State
-                    showNotionToast("Scheduled post cancelled and returned to drafts.", "success");
+                    showToast("Scheduled post cancelled and returned to drafts.", "success");
                 } else {
-                    showNotionToast('Failed to cancel scheduled post: ' + (data.error || 'Unknown error'), "error");
+                    showToast('Failed to cancel scheduled post: ' + (data.error || 'Unknown error'), "error");
                 }
             } catch (e) {
                 console.error(e);
-                showNotionToast('Network error cancelling scheduled post.', "error");
+                showToast('Network error cancelling scheduled post.', "error");
             }
         }
 
@@ -3021,6 +3001,11 @@
         fetchSystemData();
         setInterval(fetchSystemData, 5000); // Poll database state every 5 seconds
         loadChatSessions();
+
+        // Initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
     </script>
 </body>
 </html>

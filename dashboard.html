@@ -2700,16 +2700,27 @@
                     maintainAspectRatio: false,
                     scales: {
                         y: {
-                            grid: { color: '#e5e2d9' },
-                            ticks: { color: '#57534e', font: { family: 'Inter' } }
+                            grid: { color: 'rgba(255,255,255,0.06)' },
+                            ticks: { color: 'rgba(255,255,255,0.50)', font: { family: 'Inter' } }
                         },
                         x: {
                             grid: { display: false },
-                            ticks: { color: '#57534e', font: { family: 'Inter' } }
+                            ticks: { color: 'rgba(255,255,255,0.50)', font: { family: 'Inter' } }
                         }
                     },
                     plugins: {
-                        legend: { display: false }
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15,15,25,0.92)',
+                            borderColor:     'rgba(255,255,255,0.10)',
+                            borderWidth:     1,
+                            titleColor:      'rgba(255,255,255,0.95)',
+                            bodyColor:       'rgba(255,255,255,0.65)',
+                            padding:         10,
+                            cornerRadius:    6,
+                            titleFont:       { family: 'Inter' },
+                            bodyFont:        { family: 'Inter' }
+                        }
                     }
                 }
             });
@@ -2824,12 +2835,12 @@
                     interaction: { mode: 'index', intersect: false },
                     scales: {
                         y: {
-                            grid: { color: '#ede9e2' },
-                            ticks: { color: '#5c564f', font: { family: 'Inter', size: 11 } }
+                            grid: { color: 'rgba(255,255,255,0.06)' },
+                            ticks: { color: 'rgba(255,255,255,0.50)', font: { family: 'Inter', size: 11 } }
                         },
                         x: {
                             grid: { display: false },
-                            ticks: { color: '#5c564f', font: { family: 'Inter', size: 11 } }
+                            ticks: { color: 'rgba(255,255,255,0.50)', font: { family: 'Inter', size: 11 } }
                         }
                     },
                     plugins: {
@@ -2839,19 +2850,19 @@
                                 boxWidth: 10,
                                 padding: 16,
                                 font: { family: 'Inter', size: 11 },
-                                color: '#5c564f'
+                                color: 'rgba(255,255,255,0.60)'
                             }
                         },
                         tooltip: {
-                            backgroundColor: '#ffffff',
-                            borderColor: '#e8e4dc',
-                            borderWidth: 1,
-                            titleColor: '#191919',
-                            bodyColor: '#5c564f',
-                            padding: 10,
-                            cornerRadius: 6,
-                            titleFont: { family: 'Inter' },
-                            bodyFont: { family: 'Inter' }
+                            backgroundColor: 'rgba(15,15,25,0.92)',
+                            borderColor:     'rgba(255,255,255,0.10)',
+                            borderWidth:     1,
+                            titleColor:      'rgba(255,255,255,0.95)',
+                            bodyColor:       'rgba(255,255,255,0.65)',
+                            padding:         10,
+                            cornerRadius:    6,
+                            titleFont:       { family: 'Inter' },
+                            bodyFont:        { family: 'Inter' }
                         }
                     }
                 }

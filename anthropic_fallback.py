@@ -15,19 +15,23 @@ class FallbackAnthropic:
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs
+        self._init_error = None
         if OriginalAnthropic:
             try:
                 self.real_client = OriginalAnthropic(*args, **kwargs)
-            except Exception:
+            except Exception as e:
                 self.real_client = None
+                self._init_error = e
+                logger.error(f"Anthropic client init failed: {e}")
         else:
             self.real_client = None
-            
-        self.messages = FallbackMessages(self.real_client)
+
+        self.messages = FallbackMessages(self.real_client, self._init_error)
 
 class FallbackMessages:
-    def __init__(self, real_client):
+    def __init__(self, real_client, init_error=None):
         self.real_client = real_client
+        self.init_error = init_error
 
     def create(self, **kwargs):
         # 1. Try real Anthropic first
@@ -42,8 +46,10 @@ class FallbackMessages:
                 if "credit balance" in err_str.lower() or "billing" in err_str.lower() or "budget" in err_str.lower():
                     logger.warning(f"Anthropic billing issue ({err_str}). Falling back to OpenAI...")
                 else:
-                    # Re-raise so the caller sees the real error
                     raise
+        elif self.init_error:
+            # Client never initialized — surface the real cause, don't try OpenAI
+            raise RuntimeError(f"Anthropic client failed to initialize: {self.init_error}") from self.init_error
         else:
             logger.info("No real Anthropic client available. Falling back to OpenAI...")
 

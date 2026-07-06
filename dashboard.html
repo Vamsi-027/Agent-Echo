@@ -1752,6 +1752,33 @@
             });
         }
 
+        function buildAnalyticsStats() {
+            const perf = state.performance;
+            const noData = perf.length === 0;
+
+            document.getElementById('stat-impressions').textContent = noData
+                ? '—'
+                : perf.reduce((s, p) => s + (p.impressions || 0), 0).toLocaleString();
+
+            document.getElementById('stat-reactions').textContent = noData
+                ? '—'
+                : Math.round(perf.reduce((s, p) => s + (p.reactions || 0), 0) / perf.length);
+
+            document.getElementById('stat-comments').textContent = noData
+                ? '—'
+                : Math.round(perf.reduce((s, p) => s + (p.comments || 0), 0) / perf.length);
+
+            document.getElementById('stat-published').textContent =
+                (state.stats.published_count != null) ? state.stats.published_count : '—';
+
+            const chartArea = document.getElementById('analytics-chart-area');
+            if (noData) {
+                chartArea.innerHTML = '<div class="empty-state" style="padding: 48px 0; text-align: center; font-style: italic;">No performance data yet — publish your first post to see audience metrics here.</div>';
+            } else if (!document.getElementById('chart-performance')) {
+                chartArea.innerHTML = '<div class="chart-container"><canvas id="chart-performance"></canvas></div>';
+            }
+        }
+
         function buildPerformanceChart() {
             const ctx = document.getElementById('chart-performance').getContext('2d');
             if (performanceChartInstance) {

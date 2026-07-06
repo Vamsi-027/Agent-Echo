@@ -334,6 +334,8 @@
             border-radius: var(--radius-card);
             padding: 24px;
             box-shadow: var(--shadow-sm);
+            backdrop-filter: blur(10px) saturate(180%);
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
             transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
@@ -392,6 +394,8 @@
             border-radius: var(--radius-card);
             padding: 24px;
             box-shadow: var(--shadow-sm);
+            backdrop-filter: blur(10px) saturate(180%);
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
         }
 
         .panel-header {
@@ -448,6 +452,8 @@
             padding: 16px 20px;
             background: var(--bg-card);
             box-shadow: var(--shadow-sm);
+            backdrop-filter: blur(10px) saturate(180%);
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
             transition: all var(--transition-speed);
         }
 
@@ -456,10 +462,10 @@
             box-shadow: var(--shadow-md);
         }
 
-        .analytics-stat-chip.accent-orange { border-top: 4px solid var(--primary); }
-        .analytics-stat-chip.accent-amber  { border-top: 4px solid var(--warning); }
-        .analytics-stat-chip.accent-green  { border-top: 4px solid var(--success); }
-        .analytics-stat-chip.accent-neutral { border-top: 4px solid var(--text-secondary); }
+        .analytics-stat-chip.accent-orange  { border-left: 4px solid var(--primary); }
+        .analytics-stat-chip.accent-amber   { border-left: 4px solid var(--amber); }
+        .analytics-stat-chip.accent-green   { border-left: 4px solid var(--emerald); }
+        .analytics-stat-chip.accent-neutral { border-left: 4px solid var(--text-muted); }
 
         .stat-label {
             font-size: 0.72rem;
@@ -568,6 +574,8 @@
             transition: all var(--transition-speed);
             position: relative;
             box-shadow: var(--shadow-sm);
+            backdrop-filter: blur(10px) saturate(180%);
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
         }
 
         .timeline-card:hover {
@@ -592,11 +600,11 @@
             text-transform: uppercase;
         }
 
-        .timeline-source.git { background: rgba(99, 102, 241, 0.08); color: #4f46e5; }
-        .timeline-source.note { background: rgba(168, 85, 247, 0.08); color: #9333ea; }
-        .timeline-source.browser { background: rgba(249, 115, 22, 0.08); color: #ea580c; }
-        .timeline-source.file { background: rgba(16, 185, 129, 0.08); color: #059669; }
-        .timeline-source.calendar { background: rgba(239, 68, 68, 0.08); color: #dc2626; }
+        .timeline-source.git      { background: rgba(99, 102, 241, 0.18); color: #a5b4fc; }
+        .timeline-source.note     { background: rgba(168, 85, 247, 0.18); color: #d8b4fe; }
+        .timeline-source.browser  { background: rgba(249, 115, 22, 0.18);  color: #fdba74; }
+        .timeline-source.file     { background: rgba(16, 185, 129, 0.18);  color: #6ee7b7; }
+        .timeline-source.calendar { background: rgba(239, 68, 68, 0.18);   color: #fca5a5; }
 
         .timeline-time {
             font-size: 0.75rem;
@@ -612,7 +620,7 @@
         }
 
         .event-details-formatted {
-            background: #f8fafc;
+            background: rgba(255,255,255,0.04);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 12px;
@@ -632,7 +640,7 @@
         .event-code {
             font-family: var(--font-mono);
             font-size: 0.75rem;
-            background: #f1f5f9;
+            background: rgba(255,255,255,0.06);
             padding: 2px 6px;
             border-radius: 4px;
             color: var(--text-primary);
@@ -657,6 +665,8 @@
             flex-direction: column;
             gap: 14px;
             box-shadow: var(--shadow-sm);
+            backdrop-filter: blur(10px) saturate(180%);
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
             transition: all var(--transition-speed);
         }
 
@@ -686,10 +696,10 @@
             letter-spacing: 0.03em;
         }
 
-        .status-badge.pending_review { background: var(--warning-light); color: #d97706; }
-        .status-badge.approved { background: var(--success-light); color: var(--success-hover); }
-        .status-badge.published { background: var(--primary-light); color: var(--primary-hover); }
-        .status-badge.rejected { background: var(--danger-light); color: #dc2626; }
+        .status-badge.pending_review { background: var(--warning-light); color: #fbbf24; }
+        .status-badge.approved       { background: var(--success-light);  color: #34d399; }
+        .status-badge.published      { background: var(--primary-light);  color: #a5b4fc; }
+        .status-badge.rejected       { background: var(--danger-light);   color: #f87171; }
 
         .draft-metadata-row {
             display: flex;
@@ -700,7 +710,7 @@
         .draft-meta-chip {
             font-size: 0.72rem;
             font-weight: 600;
-            background: #f1f5f9;
+            background: rgba(255,255,255,0.04);
             padding: 3px 8px;
             border-radius: 6px;
             border: 1px solid var(--border-color);
@@ -711,7 +721,7 @@
             font-size: 0.82rem;
             color: var(--text-primary);
             line-height: 1.5;
-            background: #f8fafc;
+            background: rgba(255,255,255,0.04);
             padding: 14px;
             border-radius: var(--radius-btn);
             max-height: 150px;
@@ -731,7 +741,7 @@
 
         .draft-media-box {
             font-size: 0.78rem;
-            background: #f8fafc;
+            background: rgba(255,255,255,0.04);
             border: 1px dashed var(--border-color);
             padding: 10px 12px;
             border-radius: var(--radius-btn);
@@ -766,6 +776,8 @@
             border-radius: var(--radius-card);
             padding: 20px 24px;
             box-shadow: var(--shadow-sm);
+            backdrop-filter: blur(10px) saturate(180%);
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
             transition: all var(--transition-speed);
         }
 

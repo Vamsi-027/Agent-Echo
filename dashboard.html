@@ -231,6 +231,40 @@
             width: 100%;
         }
 
+        /* Analytics Stat Chips */
+        .analytics-stat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .analytics-stat-chip {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px 18px;
+        }
+
+        .analytics-stat-chip.accent-orange { border-left: 3px solid var(--primary); }
+        .analytics-stat-chip.accent-amber  { border-left: 3px solid var(--warning); }
+        .analytics-stat-chip.accent-green  { border-left: 3px solid var(--success); }
+        .analytics-stat-chip.accent-neutral { border-left: 3px solid var(--text-muted); }
+
+        .stat-label {
+            font-size: 0.7rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+
         /* Terminal Console Logs */
         .recent-logs-list {
             display: flex;

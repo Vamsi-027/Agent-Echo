@@ -1042,8 +1042,28 @@
                 <div class="panel-header">
                     <div class="panel-title">Audience Performance</div>
                 </div>
-                <div class="chart-container">
-                    <canvas id="chart-performance"></canvas>
+                <div class="analytics-stat-grid">
+                    <div class="analytics-stat-chip accent-orange">
+                        <div class="stat-label">Total Impressions</div>
+                        <div class="stat-value" id="stat-impressions">—</div>
+                    </div>
+                    <div class="analytics-stat-chip accent-amber">
+                        <div class="stat-label">Avg Reactions</div>
+                        <div class="stat-value" id="stat-reactions">—</div>
+                    </div>
+                    <div class="analytics-stat-chip accent-green">
+                        <div class="stat-label">Avg Comments</div>
+                        <div class="stat-value" id="stat-comments">—</div>
+                    </div>
+                    <div class="analytics-stat-chip accent-neutral">
+                        <div class="stat-label">Published Posts</div>
+                        <div class="stat-value" id="stat-published">—</div>
+                    </div>
+                </div>
+                <div id="analytics-chart-area">
+                    <div class="chart-container">
+                        <canvas id="chart-performance"></canvas>
+                    </div>
                 </div>
             </div>
         </div>

@@ -126,10 +126,8 @@
             left: 0;
             display: flex;
             flex-direction: column;
-            background: var(--glass-1);
-            backdrop-filter: var(--blur-md);
-            -webkit-backdrop-filter: var(--blur-md);
-            border-right: 1px solid var(--glass-border);
+            background: #ffffff;
+            border-right: 1px solid #e8eaed;
             padding: 20px 12px;
             z-index: 50;
             gap: 4px;
@@ -148,7 +146,9 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 8px 12px 12px;
+            padding: 8px 12px 16px;
+            border-bottom: 1px solid #e8eaed;
+            margin-bottom: 8px;
         }
 
         .logo-icon {
@@ -157,9 +157,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, var(--primary), var(--violet));
+            background: #1967d2;
             border-radius: var(--radius-sm);
-            box-shadow: var(--shadow-glow-primary);
             flex-shrink: 0;
             color: #ffffff;
         }
@@ -173,9 +172,9 @@
         .logo-text {
             font-family: var(--font-display);
             font-weight: 700;
-            font-size: 0.95rem;
-            color: var(--text-primary);
-            letter-spacing: -0.3px;
+            font-size: 0.92rem;
+            color: #202124;
+            letter-spacing: -0.2px;
         }
 
         .sidebar-divider {
@@ -197,14 +196,14 @@
             align-items: center;
             gap: 10px;
             width: 100%;
-            padding: 10px 12px;
+            padding: 8px 12px;
             border: none;
             border-left: 3px solid transparent;
-            border-radius: var(--radius-md);
+            border-radius: var(--radius-sm);
             background: transparent;
-            color: var(--text-secondary);
+            color: #5f6368;
             font-family: var(--font-body);
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             font-weight: 500;
             cursor: pointer;
             transition: all var(--transition-fast);
@@ -212,21 +211,20 @@
         }
 
         .nav-item:hover {
-            background: var(--glass-2);
-            color: var(--text-primary);
+            background: #f1f3f4;
+            color: #202124;
         }
 
         .nav-item.active {
-            background: var(--glass-3);
-            color: var(--text-primary);
+            background: rgba(25, 103, 210, 0.10);
+            color: #1967d2;
             font-weight: 600;
-            border-left-color: var(--primary);
-            box-shadow: var(--shadow-glass);
+            border-left-color: #1967d2;
         }
 
         .nav-item.active svg {
-            color: var(--primary);
-            stroke: var(--primary);
+            color: #1967d2;
+            stroke: #1967d2;
         }
 
         .nav-item svg {
@@ -240,6 +238,9 @@
             align-items: center;
             gap: 8px;
             padding: 10px 12px;
+            border-top: 1px solid #e8eaed;
+            font-size: 0.72rem;
+            color: #80868b;
         }
 
         .status-dot {
@@ -326,8 +327,6 @@
             border-radius: var(--radius-card);
             padding: 24px;
             box-shadow: var(--shadow-sm);
-            backdrop-filter: blur(10px) saturate(180%);
-            -webkit-backdrop-filter: blur(10px) saturate(180%);
             transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
@@ -386,8 +385,6 @@
             border-radius: var(--radius-card);
             padding: 24px;
             box-shadow: var(--shadow-sm);
-            backdrop-filter: blur(10px) saturate(180%);
-            -webkit-backdrop-filter: blur(10px) saturate(180%);
         }
 
         .panel-header {
@@ -444,8 +441,6 @@
             padding: 16px 20px;
             background: var(--bg-card);
             box-shadow: var(--shadow-sm);
-            backdrop-filter: blur(10px) saturate(180%);
-            -webkit-backdrop-filter: blur(10px) saturate(180%);
             transition: all var(--transition-speed);
         }
 
@@ -572,8 +567,6 @@
             transition: all var(--transition-speed);
             position: relative;
             box-shadow: var(--shadow-sm);
-            backdrop-filter: blur(10px) saturate(180%);
-            -webkit-backdrop-filter: blur(10px) saturate(180%);
         }
 
         .timeline-card:hover {
@@ -663,8 +656,6 @@
             flex-direction: column;
             gap: 14px;
             box-shadow: var(--shadow-sm);
-            backdrop-filter: blur(10px) saturate(180%);
-            -webkit-backdrop-filter: blur(10px) saturate(180%);
             transition: all var(--transition-speed);
         }
 
@@ -774,8 +765,6 @@
             border-radius: var(--radius-card);
             padding: 20px 24px;
             box-shadow: var(--shadow-sm);
-            backdrop-filter: blur(10px) saturate(180%);
-            -webkit-backdrop-filter: blur(10px) saturate(180%);
             transition: all var(--transition-speed);
         }
 
@@ -832,8 +821,6 @@
             width: 220px;
             flex-shrink: 0;
             background: rgba(255,255,255,0.04);
-            backdrop-filter: blur(10px) saturate(180%);
-            -webkit-backdrop-filter: blur(10px) saturate(180%);
             border-right: 1px solid var(--glass-border);
             display: flex;
             flex-direction: column;
@@ -1261,8 +1248,6 @@
             min-width: 300px;
             max-width: 400px;
             background: var(--glass-3);
-            backdrop-filter: var(--blur-md);
-            -webkit-backdrop-filter: var(--blur-md);
             border: 1px solid var(--glass-border);
             border-radius: var(--radius-md);
             box-shadow: var(--shadow-glass);
@@ -1323,7 +1308,6 @@
             width: 100%;
             height: 100%;
             background: rgba(15, 23, 42, 0.25);
-            backdrop-filter: blur(8px);
             z-index: 1000;
             justify-content: center;
             align-items: center;

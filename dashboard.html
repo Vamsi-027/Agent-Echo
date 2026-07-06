@@ -2011,6 +2011,10 @@
             info:    'info',
         };
 
+        function escapeHtml(str) {
+            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
         function showToast(message, type = 'info', duration = 4000) {
             const container = document.getElementById('toast-container');
             if (!container) return;
@@ -2023,7 +2027,7 @@
             toast.className = `toast toast-${type}`;
             toast.innerHTML = `
                 <span class="toast-icon toast-${type}"><i data-lucide="${TOAST_ICONS[type] || 'info'}"></i></span>
-                <span class="toast-message">${message}</span>
+                <span class="toast-message">${escapeHtml(message)}</span>
                 <button class="toast-close" onclick="dismissToast(this.parentElement)" aria-label="Dismiss">
                     <i data-lucide="x"></i>
                 </button>

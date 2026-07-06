@@ -814,36 +814,38 @@
             overflow: hidden;
             border: 1px solid var(--border-color);
             border-radius: var(--radius-card);
-            box-shadow: var(--shadow-md);
         }
 
         .chat-sidebar {
-            width: 220px;
+            width: 260px;
             flex-shrink: 0;
-            background: rgba(0,0,0,0.04);
-            border-right: 1px solid var(--glass-border);
+            background: #f7f7f8;
+            border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
 
         .new-chat-btn {
-            margin: 16px;
-            padding: 8px 16px;
-            background: var(--primary);
-            color: #ffffff;
-            border: none;
+            margin: 12px 12px 8px;
+            padding: 8px 14px;
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
             border-radius: var(--radius-btn);
             font-size: 0.82rem;
-            font-weight: 700;
+            font-weight: 600;
             cursor: pointer;
             font-family: var(--font-main);
             transition: all var(--transition-speed);
-            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         .new-chat-btn:hover {
-            background: var(--primary-hover);
-            transform: translateY(-1px);
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            border-color: var(--border-hover);
         }
         .new-chat-btn:active {
             transform: scale(0.98);
@@ -952,77 +954,109 @@
             overflow: hidden;
         }
 
-        .chat-session-title {
-            padding: 16px 24px;
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            border-bottom: 1px solid var(--border-color);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            flex-shrink: 0;
-        }
+        .chat-session-title { display: none; }
 
         .chat-messages {
             flex: 1;
             overflow-y: auto;
-            padding: 24px;
+            padding: 32px 24px 16px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 28px;
         }
         .chat-messages::-webkit-scrollbar { width: 5px; }
         .chat-messages::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.15); border-radius: 2px; }
 
+        /* Shared container: full width, centered at 760px */
         .chat-bubble-container {
             display: flex;
-            flex-direction: column;
-            max-width: 80%;
+            width: 100%;
+            max-width: 760px;
+            margin: 0 auto;
             font-size: 0.88rem;
-            line-height: 1.5;
+            line-height: 1.65;
             word-wrap: break-word;
-            position: relative;
-        }
-        
-        .chat-bubble-container.user {
-            align-self: flex-end;
-            background: var(--primary);
-            color: #ffffff;
-            border-radius: 12px 12px 2px 12px;
-            padding: 10px 16px;
-            box-shadow: 0 2px 8px rgba(25, 103, 210, 0.15);
-        }
-        .chat-bubble-container.agent {
-            align-self: flex-start;
-            background: rgba(0,0,0,0.06);
-            color: var(--text-primary);
-            border-radius: 12px 12px 12px 2px;
-            padding: 12px 18px;
-            max-width: 85%;
         }
 
-        .chat-agent-header {
-            font-weight: 700;
-            font-size: 0.72rem;
-            color: var(--primary);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 6px;
+        /* Agent: row layout — avatar on left, content on right */
+        .chat-bubble-container.agent {
+            flex-direction: row;
+            gap: 14px;
+            background: none;
+            padding: 0;
+            border-radius: 0;
+            color: var(--text-primary);
+            align-items: flex-start;
+        }
+
+        /* Agent avatar circle */
+        .chat-agent-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1967d2, #185abc);
+            color: #ffffff;
+            font-size: 0.7rem;
+            font-weight: 800;
             display: flex;
             align-items: center;
-            gap: 4px;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
         }
-        
+
+        /* Agent content column */
+        .chat-agent-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
+        }
+
+        /* Agent name label */
+        .chat-agent-header {
+            font-weight: 700;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            letter-spacing: 0;
+            margin-bottom: 2px;
+            display: block;
+            text-transform: none;
+        }
+
+        /* User: column, right-aligned */
+        .chat-bubble-container.user {
+            flex-direction: column;
+            align-items: flex-end;
+            background: none;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none;
+            color: inherit;
+        }
+
+        /* User bubble — the actual colored pill */
+        .chat-msg-bubble {
+            background: var(--primary);
+            color: #ffffff;
+            border-radius: 18px 18px 2px 18px;
+            padding: 10px 16px;
+            max-width: 78%;
+            word-break: break-word;
+            font-size: 0.88rem;
+            line-height: 1.6;
+        }
+
         .chat-bubble-meta {
             font-size: 0.68rem;
-            margin-top: 6px;
+            margin-top: 4px;
             opacity: 0.65;
             font-family: var(--font-mono);
             font-weight: 500;
         }
-        .chat-bubble-meta.user { text-align: right; color: rgba(255,255,255,0.80); }
-        .chat-bubble-meta.agent { text-align: left; color: var(--text-secondary); }
+        .chat-bubble-meta.user { text-align: right; color: var(--text-muted); }
+        .chat-bubble-meta.agent { text-align: left; color: var(--text-muted); }
 
         .chat-attachment-display { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
         .attachment-chip-display {
@@ -1045,6 +1079,10 @@
             gap: 6px;
             padding: 0 24px 8px;
             min-height: 0;
+            max-width: 808px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
         }
         .attachment-chip {
             display: flex;
@@ -1070,21 +1108,28 @@
             font-weight: 700;
         }
 
-        .chat-input-bar { padding: 12px 24px 24px; }
+        .chat-input-bar {
+            padding: 8px 24px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
         .chat-input-pill {
             display: flex;
             align-items: center;
             background: var(--bg-card);
             border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 6px 6px 6px 14px;
+            border-radius: 12px;
+            padding: 8px 8px 8px 16px;
             gap: 8px;
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--shadow-md);
             transition: all var(--transition-speed);
+            width: 100%;
+            max-width: 760px;
         }
         .chat-input-pill:focus-within {
             border-color: var(--primary);
-            box-shadow: 0 0 0 4px var(--primary-glow);
+            box-shadow: 0 0 0 3px var(--primary-glow), var(--shadow-md);
         }
         .chat-attach-btn {
             background: transparent;
@@ -1118,7 +1163,7 @@
         .chat-send-btn {
             width: 32px;
             height: 32px;
-            border-radius: 50%;
+            border-radius: 8px;
             background: var(--primary);
             color: #ffffff;
             border: none;
@@ -1130,7 +1175,7 @@
             font-weight: 700;
             flex-shrink: 0;
             transition: all var(--transition-speed);
-            box-shadow: 0 2px 4px rgba(99, 102, 241, 0.2);
+            box-shadow: 0 1px 3px rgba(25, 103, 210, 0.25);
         }
         .chat-send-btn:hover {
             background: var(--primary-hover);
@@ -1628,25 +1673,31 @@
         <div id="panel-chat" class="tab-panel">
             <div class="chat-split-layout">
                 <div class="chat-sidebar">
-                    <button class="new-chat-btn" onclick="createNewSession()">＋ New Chat</button>
+                    <button class="new-chat-btn" onclick="createNewSession()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        New Chat
+                    </button>
                     <div class="chat-session-list" id="chat-session-list"></div>
                 </div>
                 <div class="chat-main-panel">
                     <div class="chat-session-title" id="chat-session-title">New conversation</div>
                     <div class="chat-messages" id="chat-messages">
                         <div class="chat-bubble-container agent">
-                            <div class="chat-agent-header">✦ Agent Echo</div>
-                            <div>
-                                👋 Hello! I am Agent Echo, your autonomous developer content assistant.
-                                <br><br>You can ask me to:
-                                <br>• <i>"create a post about PostgreSQL indexes"</i>
-                                <br>• <i>"approve draft 12"</i> &nbsp;• <i>"skip draft 12"</i>
-                                <br>• <i>"reschedule draft 12 for tomorrow 3pm"</i>
-                                <br>• <i>"show queue"</i> &nbsp;• <i>"metrics summary"</i>
-                                <br>• Attach a PDF and ask me to create a post about it
-                                <br>• Attach an image or video to include in your post
+                            <div class="chat-agent-avatar">✦</div>
+                            <div class="chat-agent-body">
+                                <div class="chat-agent-header">Agent Echo</div>
+                                <div>
+                                    👋 Hello! I am Agent Echo, your autonomous developer content assistant.
+                                    <br><br>You can ask me to:
+                                    <br>• <i>"create a post about PostgreSQL indexes"</i>
+                                    <br>• <i>"approve draft 12"</i> &nbsp;• <i>"skip draft 12"</i>
+                                    <br>• <i>"reschedule draft 12 for tomorrow 3pm"</i>
+                                    <br>• <i>"show queue"</i> &nbsp;• <i>"metrics summary"</i>
+                                    <br>• Attach a PDF and ask me to create a post about it
+                                    <br>• Attach an image or video to include in your post
+                                </div>
+                                <div class="chat-bubble-meta agent">SYSTEM INITIALIZED</div>
                             </div>
-                            <div class="chat-bubble-meta agent">SYSTEM INITIALIZED</div>
                         </div>
                     </div>
                     <div class="chat-attachment-chips" id="chat-attachment-chips"></div>
@@ -1792,9 +1843,12 @@
             document.getElementById('chat-session-title').textContent = 'New conversation';
             document.getElementById('chat-messages').innerHTML = `
                 <div class="chat-bubble-container agent">
-                    <div class="chat-agent-header">✦ Agent Echo</div>
-                    <div>New conversation started. What would you like to do?</div>
-                    <div class="chat-bubble-meta agent">READY</div>
+                    <div class="chat-agent-avatar">✦</div>
+                    <div class="chat-agent-body">
+                        <div class="chat-agent-header">Agent Echo</div>
+                        <div>New conversation started. What would you like to do?</div>
+                        <div class="chat-bubble-meta agent">READY</div>
+                    </div>
                 </div>`;
             messageIdCounter = 0;
             pendingAttachments = [];
@@ -1817,9 +1871,12 @@
                 const container = document.getElementById('chat-messages');
                 if (!messages.length) {
                     container.innerHTML = `<div class="chat-bubble-container agent">
-                        <div class="chat-agent-header">✦ Agent Echo</div>
-                        <div>👋 Hello! I am Agent Echo. What would you like to create today?</div>
-                        <div class="chat-bubble-meta agent">READY</div>
+                        <div class="chat-agent-avatar">✦</div>
+                        <div class="chat-agent-body">
+                            <div class="chat-agent-header">Agent Echo</div>
+                            <div>👋 Hello! I am Agent Echo. What would you like to create today?</div>
+                            <div class="chat-bubble-meta agent">READY</div>
+                        </div>
                     </div>`;
                     return;
                 }
@@ -1843,11 +1900,16 @@
                         } catch(e) {}
                     }
                     if (msg.role === 'agent') {
-                        div.innerHTML = `<div class="chat-agent-header">✦ Agent Echo</div>
-                            <div>${msg.content}</div>
-                            <div class="chat-bubble-meta agent">${timeStr}</div>`;
+                        div.innerHTML = `
+                            <div class="chat-agent-avatar">✦</div>
+                            <div class="chat-agent-body">
+                                <div class="chat-agent-header">Agent Echo</div>
+                                <div>${msg.content}</div>
+                                <div class="chat-bubble-meta agent">${timeStr}</div>
+                            </div>`;
                     } else {
-                        div.innerHTML = `<div>${escapeHtml(msg.content)}</div>
+                        div.innerHTML = `
+                            <div class="chat-msg-bubble">${escapeHtml(msg.content)}</div>
                             ${attHtml}
                             <div class="chat-bubble-meta user">${timeStr}</div>`;
                     }
@@ -1878,9 +1940,12 @@
                 activeChatSessionId = null;
                 document.getElementById('chat-session-title').textContent = 'New conversation';
                 document.getElementById('chat-messages').innerHTML = `<div class="chat-bubble-container agent">
-                    <div class="chat-agent-header">✦ Agent Echo</div>
-                    <div>Conversation deleted. Start a new one with the button on the left.</div>
-                    <div class="chat-bubble-meta agent">READY</div>
+                    <div class="chat-agent-avatar">✦</div>
+                    <div class="chat-agent-body">
+                        <div class="chat-agent-header">Agent Echo</div>
+                        <div>Conversation deleted. Start a new one with the button on the left.</div>
+                        <div class="chat-bubble-meta agent">READY</div>
+                    </div>
                 </div>`;
             }
             await loadChatSessions();
@@ -2956,13 +3021,16 @@
             div.className = `chat-bubble-container ${sender}`;
             if (sender === 'agent') {
                 div.innerHTML = `
-                    <div class="chat-agent-header">✦ Agent Echo</div>
-                    <div>${text}</div>
-                    <div class="chat-bubble-meta ${sender}">${timeStr}</div>
+                    <div class="chat-agent-avatar">✦</div>
+                    <div class="chat-agent-body">
+                        <div class="chat-agent-header">Agent Echo</div>
+                        <div>${text}</div>
+                        <div class="chat-bubble-meta ${sender}">${timeStr}</div>
+                    </div>
                 `;
             } else {
                 div.innerHTML = `
-                    <div>${text}</div>
+                    <div class="chat-msg-bubble">${text}</div>
                     <div class="chat-bubble-meta ${sender}">${timeStr}</div>
                 `;
             }
@@ -2980,7 +3048,8 @@
             const div = document.createElement('div');
             div.id = msgId;
             div.className = `chat-bubble-container ${sender}`;
-            div.innerHTML = `<div>${escapeHtml(text)}</div>
+            div.innerHTML = `
+                <div class="chat-msg-bubble">${escapeHtml(text)}</div>
                 ${attachmentHtml}
                 <div class="chat-bubble-meta ${sender}">${timeStr}</div>`;
             container.appendChild(div);

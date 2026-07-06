@@ -31,17 +31,19 @@ class FallbackMessages:
 
     def create(self, **kwargs):
         # 1. Try real Anthropic first
+        original_error = None
         if self.real_client:
             try:
                 return self.real_client.messages.create(**kwargs)
             except Exception as e:
+                original_error = e
                 err_str = str(e)
-                # Check for low credit balance, billing issues, or status code 400
-                if "credit balance" in err_str.lower() or "billing" in err_str.lower() or "400" in err_str.lower() or "budget" in err_str.lower():
-                    logger.warning(f"Anthropic call failed ({err_str}). Falling back to OpenAI...")
+                # Only fall back to OpenAI for billing/credit issues
+                if "credit balance" in err_str.lower() or "billing" in err_str.lower() or "budget" in err_str.lower():
+                    logger.warning(f"Anthropic billing issue ({err_str}). Falling back to OpenAI...")
                 else:
-                    # Catch-all fallback for other API issues to ensure system uptime
-                    logger.warning(f"Anthropic call failed with error: {e}. Attempting OpenAI fallback...")
+                    # Re-raise so the caller sees the real error
+                    raise
         else:
             logger.info("No real Anthropic client available. Falling back to OpenAI...")
 
@@ -51,6 +53,8 @@ class FallbackMessages:
         
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
+            if original_error:
+                raise RuntimeError(f"OPENAI_API_KEY not set; original Anthropic error: {original_error}") from original_error
             raise RuntimeError("OPENAI_API_KEY is not set in .env. Cannot perform OpenAI fallback.")
             
         openai_client = openai.OpenAI(api_key=api_key)

@@ -487,9 +487,12 @@
 
         /* Draft Cards */
         .drafts-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            max-width: 680px;
+            margin: 0 auto;
+            width: 100%;
         }
 
         .draft-card {
@@ -595,7 +598,10 @@
         .queue-list {
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 24px;
+            max-width: 680px;
+            margin: 0 auto;
+            width: 100%;
         }
 
         .queue-item {
@@ -1460,30 +1466,31 @@
         </div>
     </div>
 
-    <!-- Edit Queue Modal Overlay -->
-    <div id="edit-queue-modal" class="modal-overlay">
+    <!-- Edit Post Modal (Unified) -->
+    <div id="unified-edit-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <span class="modal-title">Edit Queued Post</span>
-                <button class="modal-close-btn" onclick="closeEditQueueModal()">&times;</button>
+                <span class="modal-title" id="unified-modal-title">Edit Post</span>
+                <button class="modal-close-btn" onclick="closeUnifiedEditModal()">&times;</button>
             </div>
-            <form id="edit-queue-form" onsubmit="saveQueueEdit(event)">
-                <input type="hidden" id="edit-queue-id">
+            <form id="unified-edit-form" onsubmit="savePostEditUnified(event)">
+                <input type="hidden" id="edit-item-id">
+                <input type="hidden" id="edit-item-type"> <!-- 'draft' or 'queue' or 'schedule-draft' -->
                 <div class="modal-form-group">
-                    <label class="modal-label" for="edit-queue-text">Post Text</label>
-                    <textarea id="edit-queue-text" class="modal-textarea" rows="8" required></textarea>
+                    <label class="modal-label" for="edit-post-text">Post Text</label>
+                    <textarea id="edit-post-text" class="modal-textarea" rows="8" required></textarea>
                 </div>
                 <div class="modal-form-group">
-                    <label class="modal-label" for="edit-queue-hashtags">Hashtags</label>
-                    <input type="text" id="edit-queue-hashtags" class="modal-input">
+                    <label class="modal-label" for="edit-post-hashtags">Hashtags</label>
+                    <input type="text" id="edit-post-hashtags" class="modal-input">
                 </div>
-                <div class="modal-form-group">
-                    <label class="modal-label" for="edit-queue-time">Scheduled Publish Time (UTC)</label>
-                    <input type="text" id="edit-queue-time" class="modal-input" required placeholder="YYYY-MM-DD HH:MM:SS or relative e.g. 'tomorrow 3pm'">
+                <div class="modal-form-group" id="edit-post-time-group">
+                    <label class="modal-label" for="edit-post-time">Scheduled Publish Time (UTC)</label>
+                    <input type="text" id="edit-post-time" class="modal-input" placeholder="YYYY-MM-DD HH:MM:SS or relative e.g. 'tomorrow 3pm'">
                     <span style="font-size: 0.72rem; color: var(--text-muted);">Format: YYYY-MM-DD HH:MM:SS (e.g. 2026-07-07 14:00:00) or relative time terms.</span>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="chat-action-btn" onclick="closeEditQueueModal()" style="border-radius: 8px;">Cancel</button>
+                    <button type="button" class="chat-action-btn" onclick="closeUnifiedEditModal()" style="border-radius: 8px;">Cancel</button>
                     <button type="submit" class="chat-action-btn approve-btn" style="border-radius: 8px; font-weight: bold;">Save Changes</button>
                 </div>
             </form>
@@ -2027,6 +2034,90 @@
             list.innerHTML = html;
         }
 
+        function getMediaUrl(pathStr) {
+            if (!pathStr) return "";
+            if (pathStr.startsWith("http://") || pathStr.startsWith("https://")) {
+                return pathStr;
+            }
+            const normalized = pathStr.replace(/\\/g, "/");
+            const marker = "data/media/";
+            const idx = normalized.indexOf(marker);
+            if (idx !== -1) {
+                return "/media/" + normalized.substring(idx + marker.length);
+            }
+            return "/media/" + normalized.split("/").pop();
+        }
+
+        function getMediaHtml(mediaRefsJson) {
+            if (!mediaRefsJson) return "";
+            try {
+                const parsed = JSON.parse(mediaRefsJson);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    const filePath = parsed[0];
+                    const filename = filePath.split('/').pop();
+                    const suffix = filename.split('.').pop().toLowerCase();
+                    const url = getMediaUrl(filePath);
+
+                    if (['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(suffix)) {
+                        return `
+                            <div class="draft-media-preview-container" style="margin-top: 10px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); background: #f8fafc; display: flex; justify-content: center; align-items: center; padding: 6px;">
+                                <img src="${url}" style="max-width: 100%; max-height: 240px; object-fit: contain; border-radius: 6px;" alt="Draft Image Asset" onerror="this.parentElement.innerHTML='⚠️ Failed to load image: ${filename}'">
+                            </div>
+                        `;
+                    } else if (['mp4', 'webm', 'ogg'].includes(suffix)) {
+                        return `
+                            <div class="draft-media-preview-container" style="margin-top: 10px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); background: #f8fafc; padding: 4px;">
+                                <video src="${url}" controls style="width: 100%; max-height: 240px; border-radius: 4px; display: block;"></video>
+                            </div>
+                        `;
+                    } else {
+                        return `<div class="draft-media-box">📎 Media file: <b>${filename}</b></div>`;
+                    }
+                } else if (typeof parsed === 'object' && parsed !== null) {
+                    if (parsed.question) {
+                        return `
+                            <div class="draft-media-box" style="border-color: rgba(79, 70, 229, 0.2); background: var(--primary-light); color: var(--primary);">
+                                📊 Poll: <b>"${parsed.question}"</b> (${parsed.options ? parsed.options.join(', ') : ''})
+                            </div>`;
+                    }
+                }
+            } catch (e) {
+                console.error("Error parsing media JSON:", e);
+            }
+            return "";
+        }
+
+        function getFullPostText(text, hashtags) {
+            let combined = text || "";
+            if (hashtags) {
+                combined += "\n\n" + hashtags;
+            }
+            return combined;
+        }
+
+        function getCollapsedText(text) {
+            if (!text || text.length <= 160) return null;
+            let truncated = text.substring(0, 150);
+            const lastSpace = truncated.lastIndexOf(' ');
+            if (lastSpace > 120) {
+                truncated = truncated.substring(0, lastSpace);
+            }
+            return truncated;
+        }
+
+        function togglePostExpand(element) {
+            const parent = element.closest('.post-body-content');
+            const collapsed = parent.querySelector('.post-text-collapsed');
+            const expanded = parent.querySelector('.post-text-expanded');
+            if (collapsed.style.display === 'none') {
+                collapsed.style.display = 'block';
+                expanded.style.display = 'none';
+            } else {
+                collapsed.style.display = 'none';
+                expanded.style.display = 'block';
+            }
+        }
+
         function renderDrafts() {
             const container = document.getElementById('drafts-container');
             const statusFilter = document.getElementById('filter-drafts-status').value;
@@ -2047,36 +2138,52 @@
 
             let html = "";
             filtered.forEach(draft => {
-                let mediaDisplay = "";
-                if (draft.media_refs_json) {
-                    try {
-                        const parsed = JSON.parse(draft.media_refs_json);
-                        if (Array.isArray(parsed) && parsed.length > 0) {
-                            mediaDisplay = `<div class="draft-media-box">📎 Media file: <b>${parsed[0].split('/').pop()}</b></div>`;
-                        } else if (typeof parsed === 'object') {
-                            if (parsed.question) {
-                                mediaDisplay = `
-                                    <div class="draft-media-box" style="border-color: rgba(79, 70, 229, 0.2); background: var(--primary-light); color: var(--primary);">
-                                        📊 Poll: <b>"${parsed.question}"</b> (${parsed.options ? parsed.options.join(', ') : ''})
-                                    </div>`;
-                            }
-                        }
-                    } catch(e) {}
+                const mediaDisplay = getMediaHtml(draft.media_refs_json);
+                const fullText = getFullPostText(draft.text_content, draft.hashtags);
+                const collapsedText = getCollapsedText(fullText);
+
+                let textHtml = "";
+                if (collapsedText) {
+                    textHtml = `
+                        <div class="post-body-content" style="font-size: 0.88rem; line-height: 1.6; color: var(--text-primary); margin-bottom: 12px;">
+                            <div class="post-text-collapsed" style="display: block; white-space: pre-wrap; font-family: inherit;">${escapeHtml(collapsedText)}<span class="expand-btn" style="color: var(--primary); font-weight: 600; cursor: pointer; margin-left: 4px;" onclick="togglePostExpand(this)">...see more</span></div>
+                            <div class="post-text-expanded" style="display: none; white-space: pre-wrap; font-family: inherit;">${escapeHtml(fullText)}<span class="collapse-btn" style="color: var(--primary); font-weight: 600; cursor: pointer; margin-left: 4px;" onclick="togglePostExpand(this)">show less</span></div>
+                        </div>
+                    `;
+                } else {
+                    textHtml = `
+                        <div class="post-body-content" style="white-space: pre-wrap; font-family: inherit; font-size: 0.88rem; line-height: 1.6; color: var(--text-primary); margin-bottom: 12px;">${escapeHtml(fullText)}</div>
+                    `;
                 }
 
                 html += `
-                    <div class="draft-card">
-                        <div class="draft-header">
-                            <span class="draft-id-tag">Draft #${draft.id}</span>
-                            <span class="status-badge ${draft.status}">${draft.status.replace('_', ' ')}</span>
+                    <div class="draft-card" style="margin-bottom: 24px; padding: 20px; border-radius: 12px; background: #ffffff; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); display: flex; flex-direction: column;">
+                        <!-- Post Header -->
+                        <div class="post-header" style="display: flex; align-items: center; margin-bottom: 12px;">
+                            <div class="post-avatar" style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: #ffffff; font-weight: bold; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; margin-right: 12px;">VC</div>
+                            <div class="post-author-info" style="display: flex; flex-direction: column; line-height: 1.3;">
+                                <span class="post-author-name" style="font-weight: 700; color: var(--text-primary); font-size: 0.9rem;">Vamsi Cheruku</span>
+                                <span class="post-author-title" style="font-size: 0.75rem; color: var(--text-muted);">Systems Architect & Developer</span>
+                                <span class="post-time" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; display: flex; align-items: center; gap: 4px;">
+                                    <span>Draft #${draft.id}</span> · <span>📝 Draft</span>
+                                </span>
+                            </div>
+                            <span class="status-badge ${draft.status}" style="margin-left: auto;">${draft.status.replace('_', ' ')}</span>
                         </div>
-                        <div class="draft-metadata-row">
-                            <span class="draft-meta-chip">Pillar: <b>${draft.pillar}</b></span>
-                            <span class="draft-meta-chip">Format: <b>${draft.format_type}</b></span>
-                        </div>
-                        <div class="draft-content">${draft.text_content}</div>
+                        
+                        <!-- Combined Post Content (Text + Hashtags with Expand option) -->
+                        ${textHtml}
+                        
+                        <!-- Media Container -->
                         ${mediaDisplay}
-                        <div class="draft-hashtags">${draft.hashtags || ""}</div>
+                        
+                        <!-- Operational Management Row -->
+                        <div class="post-management-row" style="display: flex; gap: 8px; border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 16px; flex-wrap: wrap;">
+                            <button class="chat-action-btn approve-btn" onclick="directApproveDraft(${draft.id})" style="padding: 6px 12px; font-size: 0.8rem;">Approve & Queue</button>
+                            <button class="chat-action-btn" onclick="openEditDraftModal(${draft.id})" style="padding: 6px 12px; font-size: 0.8rem;">Edit Draft</button>
+                            <button class="chat-action-btn" onclick="openCustomScheduleModal(${draft.id})" style="padding: 6px 12px; font-size: 0.8rem;">Schedule Time</button>
+                            <button class="chat-action-btn" style="background: rgba(220, 38, 38, 0.05); color: #dc2626; border-color: rgba(220, 38, 38, 0.2); padding: 6px 12px; font-size: 0.8rem; margin-left: auto;" onclick="directDeleteDraft(${draft.id})">Delete</button>
+                        </div>
                     </div>
                 `;
             });
@@ -2093,40 +2200,50 @@
             let html = "";
             state.queue.forEach(item => {
                 const time = item.scheduled_time ? item.scheduled_time.replace('T', ' ').substring(0, 16) : "";
-                let mediaDisplay = "";
-                if (item.media_refs_json) {
-                    try {
-                        const parsed = JSON.parse(item.media_refs_json);
-                        if (Array.isArray(parsed) && parsed.length > 0) {
-                            mediaDisplay = `<div class="draft-media-box">📎 Media file: <b>${parsed[0].split('/').pop()}</b></div>`;
-                        } else if (typeof parsed === 'object') {
-                            if (parsed.question) {
-                                mediaDisplay = `
-                                    <div class="draft-media-box" style="border-color: rgba(79, 70, 229, 0.2); background: var(--primary-light); color: var(--primary);">
-                                        📊 Poll: <b>"${parsed.question}"</b> (${parsed.options ? parsed.options.join(', ') : ''})
-                                    </div>`;
-                            }
-                        }
-                    } catch(e) {}
+                const mediaDisplay = getMediaHtml(item.media_refs_json);
+                const fullText = getFullPostText(item.text_content, item.hashtags);
+                const collapsedText = getCollapsedText(fullText);
+
+                let textHtml = "";
+                if (collapsedText) {
+                    textHtml = `
+                        <div class="post-body-content" style="font-size: 0.88rem; line-height: 1.6; color: var(--text-primary); margin-bottom: 12px;">
+                            <div class="post-text-collapsed" style="display: block; white-space: pre-wrap; font-family: inherit;">${escapeHtml(collapsedText)}<span class="expand-btn" style="color: var(--primary); font-weight: 600; cursor: pointer; margin-left: 4px;" onclick="togglePostExpand(this)">...see more</span></div>
+                            <div class="post-text-expanded" style="display: none; white-space: pre-wrap; font-family: inherit;">${escapeHtml(fullText)}<span class="collapse-btn" style="color: var(--primary); font-weight: 600; cursor: pointer; margin-left: 4px;" onclick="togglePostExpand(this)">show less</span></div>
+                        </div>
+                    `;
+                } else {
+                    textHtml = `
+                        <div class="post-body-content" style="white-space: pre-wrap; font-family: inherit; font-size: 0.88rem; line-height: 1.6; color: var(--text-primary); margin-bottom: 12px;">${escapeHtml(fullText)}</div>
+                    `;
                 }
 
                 html += `
-                    <div class="draft-card" style="margin-bottom: 16px;">
-                        <div class="draft-header">
-                            <span class="draft-id-tag">Queue Item #${item.id} (Draft #${item.draft_id})</span>
-                            <span class="status-badge approved">${item.status}</span>
+                    <div class="draft-card" style="margin-bottom: 24px; padding: 20px; border-radius: 12px; background: #ffffff; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); display: flex; flex-direction: column;">
+                        <!-- Post Header -->
+                        <div class="post-header" style="display: flex; align-items: center; margin-bottom: 12px;">
+                            <div class="post-avatar" style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: #ffffff; font-weight: bold; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; margin-right: 12px;">VC</div>
+                            <div class="post-author-info" style="display: flex; flex-direction: column; line-height: 1.3;">
+                                <span class="post-author-name" style="font-weight: 700; color: var(--text-primary); font-size: 0.9rem;">Vamsi Cheruku</span>
+                                <span class="post-author-title" style="font-size: 0.75rem; color: var(--text-muted);">Systems Architect & Developer</span>
+                                <span class="post-time" style="font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; display: flex; align-items: center; gap: 4px;">
+                                    <span>Scheduled for <b style="color:var(--primary); font-family: monospace;">${time} UTC</b></span> · <span>🌐 Queue</span>
+                                </span>
+                            </div>
+                            <span class="status-badge approved" style="margin-left: auto;">${item.status}</span>
                         </div>
-                        <div class="draft-metadata-row" style="margin-bottom: 8px;">
-                            <span class="draft-meta-chip">Pillar: <b>${item.pillar}</b></span>
-                            <span class="draft-meta-chip">Format: <b>${item.format_type}</b></span>
-                            <span class="draft-meta-chip" style="background: var(--bg-surface);">Scheduled: <b style="color:var(--primary); font-family: monospace;">${time} UTC</b></span>
-                        </div>
-                        <div class="draft-content" style="white-space: pre-wrap; font-family: inherit; font-size: 0.85rem; line-height: 1.5; color: var(--text-primary); margin-bottom: 10px;">${escapeHtml(item.text_content || "")}</div>
+                        
+                        <!-- Combined Post Content (Text + Hashtags with Expand option) -->
+                        ${textHtml}
+                        
+                        <!-- Media Container -->
                         ${mediaDisplay}
-                        <div class="draft-hashtags" style="margin-bottom: 12px;">${escapeHtml(item.hashtags || "")}</div>
-                        <div class="chat-action-btn-row" style="margin-top: 0; justify-content: flex-start; gap: 8px;">
-                            <button class="chat-action-btn approve-btn" onclick="openEditQueueModal(${item.id})">Edit Post</button>
-                            <button class="chat-action-btn" style="background: rgba(220, 38, 38, 0.05); color: #dc2626; border-color: rgba(220, 38, 38, 0.2);" onclick="confirmDeleteQueue(${item.id})">Cancel Schedule</button>
+                        
+                        <!-- Operational Management Row -->
+                        <div class="post-management-row" style="display: flex; gap: 8px; border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 16px; flex-wrap: wrap;">
+                            <button class="chat-action-btn approve-btn" onclick="openEditQueueModal(${item.id})" style="padding: 6px 12px; font-size: 0.8rem;">Edit Post</button>
+                            <button class="chat-action-btn" onclick="openRescheduleQueueModal(${item.id})" style="padding: 6px 12px; font-size: 0.8rem;">Reschedule</button>
+                            <button class="chat-action-btn" style="background: rgba(220, 38, 38, 0.05); color: #dc2626; border-color: rgba(220, 38, 38, 0.2); padding: 6px 12px; font-size: 0.8rem; margin-left: auto;" onclick="confirmDeleteQueue(${item.id})">Cancel Schedule</button>
                         </div>
                     </div>
                 `;
@@ -2134,53 +2251,152 @@
             container.innerHTML = html;
         }
 
-        // Queue Operations Javascript
+        // Unified Modal & Form Operations Javascript
+        function openEditDraftModal(draftId) {
+            const draft = state.drafts.find(d => d.id === draftId);
+            if (!draft) return;
+
+            document.getElementById('unified-modal-title').textContent = 'Edit Draft Post';
+            document.getElementById('edit-item-id').value = draftId;
+            document.getElementById('edit-item-type').value = 'draft';
+            document.getElementById('edit-post-text').value = draft.text_content || "";
+            document.getElementById('edit-post-hashtags').value = draft.hashtags || "";
+            
+            document.getElementById('edit-post-time-group').style.display = 'none';
+            document.getElementById('edit-post-time').removeAttribute('required');
+
+            document.getElementById('unified-edit-modal').style.display = 'flex';
+        }
+
+        function openCustomScheduleModal(draftId) {
+            const draft = state.drafts.find(d => d.id === draftId);
+            if (!draft) return;
+
+            document.getElementById('unified-modal-title').textContent = 'Schedule Draft Post';
+            document.getElementById('edit-item-id').value = draftId;
+            document.getElementById('edit-item-type').value = 'schedule-draft';
+            document.getElementById('edit-post-text').value = draft.text_content || "";
+            document.getElementById('edit-post-hashtags').value = draft.hashtags || "";
+            
+            document.getElementById('edit-post-time-group').style.display = 'block';
+            document.getElementById('edit-post-time').value = draft.scheduled_time ? draft.scheduled_time.replace('T', ' ').substring(0, 19) : "";
+            document.getElementById('edit-post-time').setAttribute('required', 'true');
+
+            document.getElementById('unified-edit-modal').style.display = 'flex';
+        }
+
         function openEditQueueModal(queueId) {
             const item = state.queue.find(q => q.id === queueId);
             if (!item) return;
 
-            document.getElementById('edit-queue-id').value = queueId;
-            document.getElementById('edit-queue-text').value = item.text_content || "";
-            document.getElementById('edit-queue-hashtags').value = item.hashtags || "";
-            document.getElementById('edit-queue-time').value = item.scheduled_time ? item.scheduled_time.replace('T', ' ').substring(0, 19) : "";
+            document.getElementById('unified-modal-title').textContent = 'Edit Queued Post';
+            document.getElementById('edit-item-id').value = queueId;
+            document.getElementById('edit-item-type').value = 'queue';
+            document.getElementById('edit-post-text').value = item.text_content || "";
+            document.getElementById('edit-post-hashtags').value = item.hashtags || "";
+            
+            document.getElementById('edit-post-time-group').style.display = 'block';
+            document.getElementById('edit-post-time').value = item.scheduled_time ? item.scheduled_time.replace('T', ' ').substring(0, 19) : "";
+            document.getElementById('edit-post-time').setAttribute('required', 'true');
 
-            document.getElementById('edit-queue-modal').style.display = 'flex';
+            document.getElementById('unified-edit-modal').style.display = 'flex';
         }
 
-        function closeEditQueueModal() {
-            document.getElementById('edit-queue-modal').style.display = 'none';
+        function openRescheduleQueueModal(queueId) {
+            openEditQueueModal(queueId);
+            document.getElementById('unified-modal-title').textContent = 'Reschedule Queued Post';
         }
 
-        async function saveQueueEdit(event) {
+        function closeUnifiedEditModal() {
+            document.getElementById('unified-edit-modal').style.display = 'none';
+        }
+
+        async function savePostEditUnified(event) {
             event.preventDefault();
-            const queueId = parseInt(document.getElementById('edit-queue-id').value);
-            const textContent = document.getElementById('edit-queue-text').value;
-            const hashtags = document.getElementById('edit-queue-hashtags').value;
-            const scheduledTime = document.getElementById('edit-queue-time').value;
+            const itemId = parseInt(document.getElementById('edit-item-id').value);
+            const itemType = document.getElementById('edit-item-type').value;
+            const textContent = document.getElementById('edit-post-text').value;
+            const hashtags = document.getElementById('edit-post-hashtags').value;
+            const scheduledTime = document.getElementById('edit-post-time').value;
 
             try {
-                const response = await fetch('/api/queue/edit', {
+                let url = "";
+                let body = {};
+                
+                if (itemType === 'draft') {
+                    url = '/api/drafts/edit';
+                    body = { draft_id: itemId, text_content: textContent, hashtags: hashtags };
+                } else if (itemType === 'schedule-draft') {
+                    // Update text and hashtags first
+                    await fetch('/api/drafts/edit', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ draft_id: itemId, text_content: textContent, hashtags: hashtags })
+                    });
+                    url = '/api/drafts/approve';
+                    body = { draft_id: itemId, scheduled_time: scheduledTime };
+                } else if (itemType === 'queue') {
+                    url = '/api/queue/edit';
+                    body = { queue_id: itemId, text_content: textContent, hashtags: hashtags, scheduled_time: scheduledTime };
+                }
+
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        queue_id: queueId,
-                        text_content: textContent,
-                        hashtags: hashtags,
-                        scheduled_time: scheduledTime
-                    })
+                    body: JSON.stringify(body)
                 });
 
-                const data = await response.json();
-                if (response.ok && data.success) {
-                    closeEditQueueModal();
-                    await fetchSystemData(); // Refresh UI State
-                    showNotionToast("Scheduled post updated successfully!", "success");
+                const data = await response.ok ? await response.json() : null;
+                if (response.ok && data && data.success) {
+                    closeUnifiedEditModal();
+                    await fetchSystemData();
+                    showNotionToast(data.message || "Post updated successfully!", "success");
                 } else {
-                    showNotionToast('Failed to update post: ' + (data.error || 'Unknown error'), "error");
+                    showNotionToast('Error: ' + ((data && data.error) || 'Failed action'), "error");
                 }
             } catch (e) {
                 console.error(e);
-                showNotionToast('Network error updating scheduled post.', "error");
+                showNotionToast('Network error processing post update.', "error");
+            }
+        }
+
+        // Direct Action Handlers (Approve/Delete Drafts)
+        async function directApproveDraft(draftId) {
+            try {
+                const response = await fetch('/api/drafts/approve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ draft_id: draftId })
+                });
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    await fetchSystemData();
+                    showNotionToast("Draft approved and queued!", "success");
+                } else {
+                    showNotionToast("Failed: " + (data.error || "Approval failed"), "error");
+                }
+            } catch(e) {
+                showNotionToast("Network error approving draft.", "error");
+            }
+        }
+
+        async function directDeleteDraft(draftId) {
+            if (!confirm('Are you sure you want to delete/reject this draft?')) return;
+            try {
+                const response = await fetch('/api/drafts/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ draft_id: draftId })
+                });
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    await fetchSystemData();
+                    showNotionToast("Draft deleted.", "success");
+                } else {
+                    showNotionToast("Failed: " + (data.error || "Delete failed"), "error");
+                }
+            } catch(e) {
+                showNotionToast("Network error deleting draft.", "error");
             }
         }
 

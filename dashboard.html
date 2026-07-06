@@ -198,7 +198,6 @@
             width: 100%;
             padding: 8px 12px;
             border: none;
-            border-left: 3px solid transparent;
             border-radius: var(--radius-sm);
             background: transparent;
             color: #5f6368;
@@ -219,7 +218,6 @@
             background: rgba(25, 103, 210, 0.10);
             color: #1967d2;
             font-weight: 600;
-            border-left-color: #1967d2;
         }
 
         .nav-item.active svg {
@@ -884,16 +882,6 @@
             background: rgba(25, 103, 210, 0.08);
             border-color: rgba(25, 103, 210, 0.20);
             box-shadow: var(--shadow-sm);
-        }
-        .session-item.active::before {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 25%;
-            height: 50%;
-            width: 3px;
-            background: var(--primary);
-            border-radius: 0 4px 4px 0;
         }
 
         .session-item-body { flex: 1; min-width: 0; }

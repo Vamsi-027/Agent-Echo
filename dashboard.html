@@ -272,6 +272,11 @@
             color: var(--text-secondary);
         }
 
+        /* Content area scrollbar */
+        .content-area::-webkit-scrollbar       { width: 5px; }
+        .content-area::-webkit-scrollbar-track { background: transparent; }
+        .content-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
+
         /* === Animation Keyframes === */
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(12px); }
@@ -538,15 +543,16 @@
         .filter-select {
             padding: 6px 14px;
             border-radius: var(--radius-btn);
-            border: 1px solid var(--border-color);
-            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            background: rgba(255,255,255,0.06);
             font-size: 0.8rem;
             font-weight: 600;
-            color: var(--text-secondary);
+            color: var(--text-primary);
             outline: none;
             cursor: pointer;
             transition: all var(--transition-speed);
             box-shadow: var(--shadow-sm);
+            color-scheme: dark;
         }
 
         .filter-select:hover {
@@ -556,6 +562,11 @@
         .filter-select:focus {
             border-color: var(--primary);
             box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        .filter-select option {
+            background: #1a1a2e;
+            color: rgba(255,255,255,0.90);
         }
 
         /* Timeline Items */
@@ -833,8 +844,10 @@
         .chat-sidebar {
             width: 220px;
             flex-shrink: 0;
-            background: #f8fafc;
-            border-right: 1px solid var(--border-color);
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(10px) saturate(180%);
+            -webkit-backdrop-filter: blur(10px) saturate(180%);
+            border-right: 1px solid var(--glass-border);
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -871,7 +884,7 @@
             gap: 4px;
         }
         .chat-session-list::-webkit-scrollbar { width: 4px; }
-        .chat-session-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+        .chat-session-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
 
         .session-item {
             display: flex;
@@ -886,11 +899,11 @@
             position: relative;
         }
         .session-item:hover {
-            background: #e2e8f0;
+            background: rgba(255,255,255,0.06);
         }
         .session-item.active {
-            background: #ffffff;
-            border-color: var(--border-color);
+            background: rgba(255,255,255,0.10);
+            border-color: var(--glass-border);
             box-shadow: var(--shadow-sm);
         }
         .session-item.active::before {
@@ -954,7 +967,7 @@
             font-weight: 700;
         }
         .confirm-yes { background: var(--danger-light); color: var(--danger); border-color: rgba(239, 68, 68, 0.2) !important; }
-        .confirm-no { background: #fff; color: var(--text-secondary); }
+        .confirm-no { background: rgba(255,255,255,0.06); color: var(--text-secondary); }
 
         /* Chat Main Panel */
         .chat-main-panel {
@@ -986,7 +999,7 @@
             gap: 20px;
         }
         .chat-messages::-webkit-scrollbar { width: 5px; }
-        .chat-messages::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 2px; }
+        .chat-messages::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.15); border-radius: 2px; }
 
         .chat-bubble-container {
             display: flex;
@@ -1008,7 +1021,7 @@
         }
         .chat-bubble-container.agent {
             align-self: flex-start;
-            background: #f1f5f9;
+            background: rgba(255,255,255,0.06);
             color: var(--text-primary);
             border-radius: 12px 12px 12px 2px;
             padding: 12px 18px;

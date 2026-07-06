@@ -687,6 +687,105 @@ class DashboardRequestHandler(http.server.BaseHTTPRequestHandler):
         path = self.path.split("?")[0]
         if path == "/api/chats":
             self._handle_create_session()
+        elif path == "/api/queue/delete":
+            content_length = int(self.headers.get("Content-Length", 0))
+            post_data = self.rfile.read(content_length)
+            try:
+                payload = json.loads(post_data.decode("utf-8"))
+                queue_id = payload.get("queue_id")
+                if not queue_id:
+                    self.send_json_error(400, "Missing queue_id")
+                    return
+                
+                conn = get_db_connection()
+                row = conn.execute("SELECT draft_id FROM content_queue WHERE id = ?", (queue_id,)).fetchone()
+                if not row:
+                    conn.close()
+                    self.send_json_error(404, f"Queue item #{queue_id} not found")
+                    return
+                
+                draft_id = row[0]
+                # Delete from content_queue
+                conn.execute("DELETE FROM content_queue WHERE id = ?", (queue_id,))
+                # Mark draft back to pending_review so user doesn't lose it
+                conn.execute("UPDATE drafts SET status = 'pending_review' WHERE id = ?", (draft_id,))
+                conn.commit()
+                conn.close()
+                self.send_json_response(200, {"success": True, "message": f"Queue item #{queue_id} cancelled and returned to drafts."})
+            except Exception as e:
+                logger.error(f"Error deleting queue item: {e}", exc_info=True)
+                self.send_json_error(500, str(e))
+
+        elif path == "/api/queue/edit":
+            content_length = int(self.headers.get("Content-Length", 0))
+            post_data = self.rfile.read(content_length)
+            try:
+                payload = json.loads(post_data.decode("utf-8"))
+                queue_id = payload.get("queue_id")
+                text_content = payload.get("text_content")
+                hashtags = payload.get("hashtags", "")
+                scheduled_time_str = payload.get("scheduled_time")
+                
+                if not queue_id:
+                    self.send_json_error(400, "Missing queue_id")
+                    return
+                
+                conn = get_db_connection()
+                row = conn.execute("SELECT draft_id FROM content_queue WHERE id = ?", (queue_id,)).fetchone()
+                if not row:
+                    conn.close()
+                    self.send_json_error(404, f"Queue item #{queue_id} not found")
+                    return
+                
+                draft_id = row[0]
+                
+                # Update text content and hashtags on drafts
+                conn.execute(
+                    "UPDATE drafts SET text_content = ?, hashtags = ? WHERE id = ?",
+                    (text_content, hashtags, draft_id)
+                )
+                
+                # Try parsing relative time if scheduled_time is provided
+                if scheduled_time_str:
+                    scheduled_time_str = scheduled_time_str.strip()
+                    parsed_time = None
+                    
+                    # If it matches absolute format like YYYY-MM-DD HH:MM:SS or with T
+                    if re.match(r"^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}", scheduled_time_str):
+                        parsed_time = scheduled_time_str.replace(' ', 'T')
+                        # format it as YYYY-MM-DDTHH:MM:SS
+                        if len(parsed_time) == 16:
+                            parsed_time += ":00"
+                    else:
+                        # Fallback parsing relative using telegram helper (if available)
+                        try:
+                            from notification.telegram_bot import parse_relative_datetime_with_llm
+                            import asyncio
+                            parsed_time = asyncio.run(parse_relative_datetime_with_llm(scheduled_time_str))
+                        except Exception as e:
+                            logger.error(f"Error parsing relative datetime '{scheduled_time_str}': {e}")
+                    
+                    if parsed_time:
+                        conn.execute(
+                            "UPDATE content_queue SET scheduled_time = ? WHERE id = ?",
+                            (parsed_time, queue_id)
+                        )
+                        conn.execute(
+                            "UPDATE drafts SET scheduled_time = ? WHERE id = ?",
+                            (parsed_time, draft_id)
+                        )
+                    else:
+                        conn.close()
+                        self.send_json_error(400, f"Could not parse scheduled time: '{scheduled_time_str}'")
+                        return
+
+                conn.commit()
+                conn.close()
+                self.send_json_response(200, {"success": True, "message": f"Queue item #{queue_id} updated successfully."})
+            except Exception as e:
+                logger.error(f"Error editing queue item: {e}", exc_info=True)
+                self.send_json_error(500, str(e))
+
         elif path == "/api/upload":
             self._handle_file_upload()
         elif path == "/api/chat":
@@ -878,7 +977,8 @@ class DashboardRequestHandler(http.server.BaseHTTPRequestHandler):
             # 4. Fetch content queue
             queue = []
             rows = conn.execute(
-                "SELECT cq.id, cq.draft_id, cq.priority_score, cq.scheduled_time, cq.status, d.pillar, d.format_type "
+                "SELECT cq.id, cq.draft_id, cq.priority_score, cq.scheduled_time, cq.status, "
+                "d.pillar, d.format_type, d.text_content, d.hashtags, d.media_refs_json "
                 "FROM content_queue cq "
                 "JOIN drafts d ON cq.draft_id = d.id "
                 "WHERE cq.status = 'queued' "

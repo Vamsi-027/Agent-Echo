@@ -326,11 +326,14 @@ def _build_scene_graph(
 
 
 def build_remotion_props(
-    composition: str, digest: dict, error_feedback: str | None = None
+    composition: str,
+    digest: dict,
+    error_feedback: str | None = None,
+    draft_text: str | None = None,
 ) -> dict | None:
     """
     Use Claude structured output to extract animation properties
-    from the daily digest, matching the target composition's schema.
+    from the daily digest and optional draft text, matching the target composition's schema.
 
     If error_feedback is passed (the stderr/stdout tail from a failed render
     attempt), it's appended to the prompt so Claude can self-correct on retry.
@@ -351,19 +354,24 @@ def build_remotion_props(
 
         system_prompt = (
             f"You are a technical animation data extractor. Given a developer's "
-            f"daily work digest, extract the key information needed to render a "
+            f"daily work digest and an optional post draft text, extract the key information needed to render a "
             f"'{composition}' animation. Focus on the actual technical content — "
             f"real component names, state names, pipeline stages, or metrics "
-            f"from the digest. Keep titles concise (under 60 chars). "
+            f"from the digest or the post draft text. Do NOT use generic names like "
+            f"'Init', 'Load', 'Execute' or 'Latency', 'Throughput' unless they are the primary subject of the text. "
+            f"Instead, extract names, components, or metrics that represent the actual content of the post. "
+            f"Keep titles concise (under 60 chars). "
             f"For ArchitectureRevealAnimation, x/y values must be between 0.0 and 1.0."
         )
 
         user_prompt = (
-            f"Extract animation properties for a '{composition}' from this digest:\n\n"
+            f"Extract animation properties for a '{composition}' from this digest and post draft:\n\n"
             f"Summary: {summary}\n"
             f"Highlights: {highlights}\n"
             f"Categories: {categories}"
         )
+        if draft_text:
+            user_prompt += f"\nPost Draft Text:\n{draft_text}"
 
         if error_feedback:
             user_prompt += (
@@ -830,7 +838,7 @@ def generate_remotion_video(
     logger.info(f"Selected Remotion composition: {composition} (reasoning: {reasoning})")
 
     # 3. Generate visual props from Claude
-    props = build_remotion_props(composition, digest)
+    props = build_remotion_props(composition, digest, draft_text=draft_text)
     if not props:
         logger.error("Failed to build Remotion props.")
         return False

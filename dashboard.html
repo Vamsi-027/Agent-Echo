@@ -1481,25 +1481,46 @@
 </head>
 <body>
 
-    <header>
-        <div class="logo-section">
-            <div class="logo-indicator">✦</div>
-            <h1 class="logo-title">Agent Echo</h1>
-        </div>
-        <nav class="header-nav">
-            <button class="nav-btn active" onclick="switchTab('overview', this)"><span>📊</span> Overview</button>
-            <button class="nav-btn" onclick="switchTab('activity', this)"><span>📝</span> Activity</button>
-            <button class="nav-btn" onclick="switchTab('drafts', this)"><span>📄</span> Drafts</button>
-            <button class="nav-btn" onclick="switchTab('queue', this)"><span>📅</span> Queue</button>
-            <button class="nav-btn" onclick="switchTab('analytics', this)"><span>📈</span> Metrics</button>
-            <button class="nav-btn" onclick="switchTab('chat', this)"><span>💬</span> Chat</button>
+    <div class="app-shell">
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon"><i data-lucide="zap"></i></div>
+                <span class="logo-text">Agent Echo</span>
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-nav">
+                <button class="nav-item active" onclick="switchTab('overview', this)">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Overview</span>
+                </button>
+                <button class="nav-item" onclick="switchTab('activity', this)">
+                    <i data-lucide="activity"></i>
+                    <span>Activity</span>
+                </button>
+                <button class="nav-item" onclick="switchTab('drafts', this)">
+                    <i data-lucide="file-text"></i>
+                    <span>Drafts</span>
+                </button>
+                <button class="nav-item" onclick="switchTab('queue', this)">
+                    <i data-lucide="clock"></i>
+                    <span>Queue</span>
+                </button>
+                <button class="nav-item" onclick="switchTab('analytics', this)">
+                    <i data-lucide="bar-chart-2"></i>
+                    <span>Analytics</span>
+                </button>
+                <button class="nav-item" onclick="switchTab('chat', this)">
+                    <i data-lucide="message-square"></i>
+                    <span>Chat</span>
+                </button>
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-status" id="system-status">
+                <span class="status-dot"></span>
+                <span class="status-label">CONNECTED</span>
+            </div>
         </nav>
-        <div class="system-status" id="system-status">
-            <span>● Active</span>
-        </div>
-    </header>
-
-    <div class="main-container">
+        <main class="content-area" id="content-area">
         <!-- HUD Cards Row -->
         <div class="hud-stats-grid">
             <div class="hud-card" onclick="switchTab('activity')">
@@ -1713,11 +1734,10 @@
                 </div>
             </form>
         </div>
+        </main>
     </div>
 
-    <footer>
-        Agent Echo // Localtime: <span id="footer-time"></span>
-    </footer>
+    <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
 
     <script>
         // Global variables holding API data

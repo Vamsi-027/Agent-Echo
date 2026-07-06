@@ -806,14 +806,17 @@
             font-weight: 500;
         }
 
-        /* Chat Split Layout */
+        /* Chat Split Layout — full viewport, no card box */
+        #panel-chat {
+            margin: -32px -36px;
+            gap: 0;
+        }
+
         .chat-split-layout {
             display: flex;
-            height: 620px;
+            height: 100vh;
             width: 100%;
             overflow: hidden;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-card);
         }
 
         .chat-sidebar {

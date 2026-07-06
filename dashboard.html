@@ -36,7 +36,6 @@
             --primary: #6366f1;
             --primary-hover: #4f46e5;
             --primary-light: rgba(99, 102, 241, 0.15);
-            --primary-glow: 0 0 24px rgba(99, 102, 241, 0.35);
             --violet: #8b5cf6;
             --sky: #0ea5e9;
             --emerald: #10b981;
@@ -315,9 +314,9 @@
         }
 
         /* === Animation Utilities === */
-        .anim-fade-in-up     { animation: fadeInUp     280ms var(--transition-base) both; }
-        .anim-slide-in-right { animation: slideInRight 200ms var(--transition-base) both; }
-        .anim-scale-in       { animation: scaleIn      240ms var(--transition-base) both; }
+        .anim-fade-in-up     { animation: fadeInUp     280ms cubic-bezier(0.4, 0, 0.2, 1) both; }
+        .anim-slide-in-right { animation: slideInRight 200ms cubic-bezier(0.4, 0, 0.2, 1) both; }
+        .anim-scale-in       { animation: scaleIn      240ms cubic-bezier(0.4, 0, 0.2, 1) both; }
 
         /* Stagger: JS sets style="--stagger: N" (0-indexed) */
         [style*="--stagger"] { animation-delay: calc(var(--stagger, 0) * 60ms); }
@@ -1258,7 +1257,7 @@
             border-left: 4px solid var(--primary);
             position: relative;
             overflow: hidden;
-            animation: slideInFromBottom 300ms var(--transition-base) both;
+            animation: slideInFromBottom 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
         }
 
         .toast.toast-success { border-left-color: var(--emerald); }
@@ -1966,14 +1965,6 @@
         // Charts singletons
         let eventsChartInstance = null;
         let performanceChartInstance = null;
-
-        // Sync Clock
-        function updateClock() {
-            const now = new Date();
-            document.getElementById('footer-time').innerText = now.toLocaleTimeString();
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
 
         // Switch panel tabs
         function switchTab(tabId, btnElement = null) {

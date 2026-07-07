@@ -43,7 +43,7 @@ class FileWatcherHandler(FileSystemEventHandler):
         # 3. Always exclude built-in directories and files we don't want to track
         parts = resolved_path.parts
         ignored_dirs = {
-            ".git", ".venv", "venv", "__pycache__", ".pytest_cache",
+            ".git", ".venv", "venv", "__pycache__", ".pytest_cache", "tests", "scratch",
             "node_modules", "dist", "build", ".idea", ".vscode", "agent_echo.egg-info"
         }
         for p in parts:
@@ -52,7 +52,7 @@ class FileWatcherHandler(FileSystemEventHandler):
                 
         # 4. Exclude temp files, databases, lockfiles, etc.
         suffix = resolved_path.suffix.lower()
-        if suffix in (".pyc", ".pyo", ".pyd", ".db", ".db-journal", ".sqlite", ".log", ".lock", ".swp", ".tmp"):
+        if suffix in (".pyc", ".pyo", ".pyd", ".db", ".db-journal", ".db-wal", ".db-shm", ".sqlite", ".log", ".lock", ".swp", ".tmp"):
             return True
             
         # 5. Do not track files inside data directory (screenshots, media) since the agent writes there

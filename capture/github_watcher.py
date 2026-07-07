@@ -29,6 +29,10 @@ def fetch_and_store_github_events() -> None:
         
     try:
         response = requests.get(url, headers=headers)
+        if response.status_code == 401 and token:
+            logger.warning("GitHub GITHUB_TOKEN in .env is invalid or expired (401 Unauthorized). Retrying without token header to fetch public events...")
+            headers.pop("Authorization", None)
+            response = requests.get(url, headers=headers)
         response.raise_for_status()
         events = response.json()
     except Exception as e:
@@ -62,12 +66,14 @@ def fetch_and_store_github_events() -> None:
         }
         
         if ev_type == "PushEvent":
-            commits = ev.get("payload", {}).get("commits", [])
-            if not commits:
-                continue
+            commits = ev.get("payload", {}).get("commits") or []
             commit_messages = [c.get("message", "").split("\n")[0] for c in commits]
-            title = f"Pushed {len(commits)} commit(s) to {repo_name}"
-            detail["commits"] = commit_messages
+            if commits:
+                title = f"Pushed {len(commits)} commit(s) to {repo_name}"
+                detail["commits"] = commit_messages
+            else:
+                title = f"Pushed commits to {repo_name}"
+                detail["commits"] = []
             
         elif ev_type == "PullRequestEvent":
             payload = ev.get("payload", {})

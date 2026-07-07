@@ -676,6 +676,46 @@ class DashboardRequestHandler(http.server.BaseHTTPRequestHandler):
             self.serve_api_data()
         elif path == "/api/chats":
             self._handle_list_sessions()
+        elif path.startswith("/media/"):
+            # Serve static media assets
+            rel_path = path[7:]
+            if ".." in rel_path or rel_path.startswith("/") or rel_path.startswith("\\"):
+                self.send_error(400, "Invalid Path")
+                return
+            
+            target_file = Path("data/media") / rel_path
+            if not target_file.exists() or not target_file.is_file():
+                self.send_error(404, "File Not Found")
+                return
+            
+            suffix = target_file.suffix.lower()
+            content_type = "application/octet-stream"
+            if suffix in (".png",):
+                content_type = "image/png"
+            elif suffix in (".jpg", ".jpeg"):
+                content_type = "image/jpeg"
+            elif suffix in (".gif",):
+                content_type = "image/gif"
+            elif suffix in (".mp4",):
+                content_type = "video/mp4"
+            elif suffix in (".webm",):
+                content_type = "video/webm"
+            elif suffix in (".mp3",):
+                content_type = "audio/mpeg"
+            elif suffix in (".wav",):
+                content_type = "audio/wav"
+            
+            try:
+                with open(target_file, "rb") as f:
+                    content = f.read()
+                self.send_response(200)
+                self.send_header("Content-Type", content_type)
+                self.send_header("Content-Length", str(len(content)))
+                self.send_header("Cache-Control", "public, max-age=3600")
+                self.end_headers()
+                self.wfile.write(content)
+            except Exception as e:
+                self.send_error(500, f"Error serving media file: {e}")
         else:
             m = re.match(r"^/api/chats/(\d+)/messages$", path)
             if m:
@@ -784,6 +824,100 @@ class DashboardRequestHandler(http.server.BaseHTTPRequestHandler):
                 self.send_json_response(200, {"success": True, "message": f"Queue item #{queue_id} updated successfully."})
             except Exception as e:
                 logger.error(f"Error editing queue item: {e}", exc_info=True)
+                self.send_json_error(500, str(e))
+
+        elif path == "/api/drafts/edit":
+            content_length = int(self.headers.get("Content-Length", 0))
+            post_data = self.rfile.read(content_length)
+            try:
+                payload = json.loads(post_data.decode("utf-8"))
+                draft_id = payload.get("draft_id")
+                text_content = payload.get("text_content")
+                hashtags = payload.get("hashtags", "")
+                
+                if not draft_id:
+                    self.send_json_error(400, "Missing draft_id")
+                    return
+                
+                conn = get_db_connection()
+                conn.execute(
+                    "UPDATE drafts SET text_content = ?, hashtags = ? WHERE id = ?",
+                    (text_content, hashtags, draft_id)
+                )
+                conn.commit()
+                conn.close()
+                self.send_json_response(200, {"success": True, "message": f"Draft #{draft_id} updated successfully."})
+            except Exception as e:
+                logger.error(f"Error editing draft: {e}", exc_info=True)
+                self.send_json_error(500, str(e))
+
+        elif path == "/api/drafts/delete":
+            content_length = int(self.headers.get("Content-Length", 0))
+            post_data = self.rfile.read(content_length)
+            try:
+                payload = json.loads(post_data.decode("utf-8"))
+                draft_id = payload.get("draft_id")
+                
+                if not draft_id:
+                    self.send_json_error(400, "Missing draft_id")
+                    return
+                
+                conn = get_db_connection()
+                conn.execute("UPDATE drafts SET status = 'rejected' WHERE id = ?", (draft_id,))
+                conn.commit()
+                conn.close()
+                self.send_json_response(200, {"success": True, "message": f"Draft #{draft_id} deleted."})
+            except Exception as e:
+                logger.error(f"Error deleting draft: {e}", exc_info=True)
+                self.send_json_error(500, str(e))
+
+        elif path == "/api/drafts/approve":
+            content_length = int(self.headers.get("Content-Length", 0))
+            post_data = self.rfile.read(content_length)
+            try:
+                payload = json.loads(post_data.decode("utf-8"))
+                draft_id = payload.get("draft_id")
+                custom_time = payload.get("scheduled_time")
+                
+                if not draft_id:
+                    self.send_json_error(400, "Missing draft_id")
+                    return
+                
+                from generator.draft_generator import approve_draft
+                conn = get_db_connection()
+                
+                if custom_time:
+                    custom_time = custom_time.strip()
+                    parsed_time = None
+                    if re.match(r"^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}", custom_time):
+                        parsed_time = custom_time.replace(' ', 'T')
+                        if len(parsed_time) == 16:
+                            parsed_time += ":00"
+                    else:
+                        try:
+                            from notification.telegram_bot import parse_relative_datetime_with_llm
+                            import asyncio
+                            parsed_time = asyncio.run(parse_relative_datetime_with_llm(custom_time))
+                        except Exception as e:
+                            logger.error(f"Error parsing relative datetime '{custom_time}': {e}")
+                    
+                    if parsed_time:
+                        conn.execute("UPDATE drafts SET status = 'approved', scheduled_time = ? WHERE id = ?", (parsed_time, draft_id))
+                        conn.execute("INSERT OR REPLACE INTO content_queue (draft_id, scheduled_time, status) VALUES (?, ?, 'queued')", (draft_id, parsed_time))
+                        conn.commit()
+                        conn.close()
+                        self.send_json_response(200, {"success": True, "message": f"Draft #{draft_id} scheduled for {parsed_time}."})
+                        return
+                    else:
+                        conn.close()
+                        self.send_json_error(400, f"Could not parse scheduled time: '{custom_time}'")
+                        return
+                
+                conn.close()
+                approve_draft(draft_id)
+                self.send_json_response(200, {"success": True, "message": f"Draft #{draft_id} approved and queued."})
+            except Exception as e:
+                logger.error(f"Error approving draft: {e}", exc_info=True)
                 self.send_json_error(500, str(e))
 
         elif path == "/api/upload":
